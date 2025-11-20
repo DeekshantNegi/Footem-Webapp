@@ -168,7 +168,7 @@ const Home = () => {
             <h1 className="font-medium -tracking-[0.07em] text-3xl sm:text-[3vmax] ">
               Easy Online Booking
             </h1>
-            <h1 className="font-medium text-4xl -tracking-[0.07em] text-[#b4e716] ">
+            <h1 className="font-medium text-4xl sm:text-5xl -tracking-[0.07em] text-[#b4e716] ">
               Affordable Rates
             </h1>
             <h1 className="font-medium text-3xl sm:text-[3vmax] -tracking-[0.07em] ">
