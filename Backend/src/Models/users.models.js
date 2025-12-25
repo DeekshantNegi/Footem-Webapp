@@ -45,4 +45,8 @@ const userschem = new mongoose.Schema(
     }
 )
 
+const hashedPassword = async(password) =>{
+    bycript.hash(password,10)
+}
+
 export const User = mongoose.model("User",userschem)
