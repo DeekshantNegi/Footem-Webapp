@@ -94,7 +94,7 @@ const Turfs = () => {
                   <div className="flex flex-col rounded-lg sm:flex-row sm:items-center gap-[1vmin] p-[1vmin] w-full text-black/50">
                     <label for="location-input">Location</label>
                     <input
-                      className="w-full border border-gray-300 text-sm rounded-md p-1"
+                      className="w-full border border-gray-300 text-sm rounded-md p-1 focus:outline-none"
                       type="text"
                       id="location-input"
                       value={locationFilter}

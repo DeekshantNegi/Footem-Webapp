@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { TurfContext } from "../context/TurfContext";
+import { motion } from "framer-motion";
 import HeroImg from "../assets/Heroimg.jpg";
 
 import HeroVid from "../assets/HeroVid.mp4";
@@ -81,7 +82,10 @@ const Home = () => {
           <source src={HeroVid} type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-black/20 w-full h-full"></div>
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{duration:1}}
           className="w-full  h-[70%] sm:h-[60%] p-[8vmin] flex flex-col justify-center items-center text-white leading-none drop-shadow-2xl "
           style={{ fontFamily: "Racing Sans One" }}
         >
@@ -91,7 +95,7 @@ const Home = () => {
           <h2 className="flex flex-wrap justify-center pl-[4vmax] md:pl-[0px] text-[14vmax] md:text-[120px] leading-[9vmax] md:leading-[3vmax]">
             <span className="sm:text-[#b4e716] z-5">YOUR</span> GAME
           </h2>
-        </div>
+        </motion.div>
         <div className=""></div>
       </div>
 
