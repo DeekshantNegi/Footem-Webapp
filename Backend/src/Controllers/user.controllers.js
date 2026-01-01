@@ -4,8 +4,6 @@
 const registeruser = asyncHandler(async (req, res) => {
 
     /* Validate input fields */
-
-
     const{fullname, email, password}= req.body;
 
     if([fullname,email,password].some((field)=>field?.trim()==="")

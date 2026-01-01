@@ -1,0 +1,1 @@
+//slot availability, booking ownership
