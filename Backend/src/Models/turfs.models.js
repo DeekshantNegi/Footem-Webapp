@@ -2,17 +2,11 @@ import mongoose from 'mongoose'
 
 const Turfschema = new mongoose.Schema(
     {
-        turfId: {
-            type: String,
-            required: true,
-            unique: true,
-        },
         ownerId: {
-            type: String,
-            required: true,
-
+            type: mongoose.Schema.Types.ObjectId,
+                  ref: "User",
         },
-        name: {
+        Turfname: {
             type: String,
             required: true,
         },
@@ -49,4 +43,4 @@ const Turfschema = new mongoose.Schema(
     }
 )
 
-export const Turfs = mongoose.model("Turfs",Turfschema)
+export const Turfs = mongoose.model("Turf",Turfschema)

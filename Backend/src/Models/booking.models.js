@@ -1,39 +1,52 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
-const Bookingschema = new mongoose.Schema(
-    {
-        bookingId: {
-            type: String,
-            required: true,
-            unique: true,
-        },
-        userId: {
-            type: String,
-            required: true,
-        },
-        turfId: {
-            type: String,
-            required: true,
-        },
-        date: {
-            type: String,
-            required: true,
-        },
-        timeSlot: {
-            type: String,
-            required: true,
-        },
-        status: {
-            type: String,
-            enum: ['pending', 'confirmed', 'cancelled', 'completed'],
-            default: 'pending',
-        },
-        paymentId: {
-            type: String,
-        },
-        createdAt: Date
+const bookingSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    turfId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Turf",
+      required: true,
+    },
+    date: {
+      type: String,
+      required: true,
+    },
+    startTime: {
+      type: String,
+      required: true,
+    },
+    endTime: {
+      type: String,
+      required: true,
+    },
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
+    bookingStatus: {
+      type: String,
+      enum: ["pending", "confirmed", "cancelled", "completed"],
+      default: "pending",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    paymentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Payment",
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
 
-    }
-)
-
-export const Bookings = mongoose.model("Bookings",Bookingschema)
+export const Booking = mongoose.model("Booking", bookingSchema );

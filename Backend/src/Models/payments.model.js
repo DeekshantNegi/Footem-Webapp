@@ -2,11 +2,7 @@ import mongoose from 'mongoose'
 
 const Paymentschema = new mongoose.Schema(
     {
-        paymentId:{
-            type: String,
-            required: true,
-            unique: true,
-        },
+         
         bookingId: {
             type: String,
             required: true,
@@ -45,4 +41,4 @@ const Paymentschema = new mongoose.Schema(
     }
 )
 
-export const Payments = mongoose.model("Payments",Paymentschema)
+export const Payment = mongoose.model("Payment",Paymentschema)

@@ -1,1 +1,2 @@
-const DB_NAME = "footurf"
+export const DB_NAME = "footurf"
+
