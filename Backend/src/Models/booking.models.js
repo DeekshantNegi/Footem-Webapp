@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import jwt from "jsonwebtoken";
+
 
 const bookingSchema = new mongoose.Schema(
   {

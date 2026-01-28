@@ -1,4 +1,4 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
 //getting controllers
@@ -11,11 +11,11 @@ const{
 } = require("../Controllers/user.controllers");
 
 
-router.post("/register",registeruser);
-router.post("/login",loginuser);
-router.post("logout",logoutuser);
+router.route("/register").post(registeruser);
+router.route("/login").post(loginuser);
+router.route("/logout").post(logoutuser);
 
-router.get("/profile",getuserprofile);
-router.put("/changepassword",changeuserpassword);
+router.route("/profile").get(getuserprofile);
+router.route("/changepassword").put(changeuserpassword);
 
-module.exports = router;
+export default router;

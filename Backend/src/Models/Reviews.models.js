@@ -1,31 +1,30 @@
-import mongoose from 'mongoose'
-import { type } from 'os'
+import mongoose from "mongoose";
+ 
 
-const Reviewsschema = new mongoose.Schema(
-    {
-        reviewId: {
-            type: String,
-            required: true,
-            unique: true,
-        },
-        turfId: {
-            type: String,
-            required: true,
-        },
-        userId: {
-            type: String,
-            required: true,
-        },
-        rating: {
-            type: Number,
-            required: true,
-        },
-        comment: {
-            type: String,
-        },
-        createdAt: Date
-
+const reviewsSchema = new mongoose.Schema(
+  {
+    turfId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Turf",
+      required: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    comment: {
+      type: String,
     }
-)
+    
+  },
+  { timestamps: true },
+);
 
-export const Rivews = mongoose.model("Rivews",Reviewsschema)
+export const Reviews = mongoose.model("Reviews", reviewsSchema);
