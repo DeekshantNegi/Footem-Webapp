@@ -1,43 +1,50 @@
-
+import asyncHandler from "../Utils/asyncHandler.js";
+import ApiError from "../Utils/ApiError.js";
+import ApiResponse from "../Utils/ApiResponse.js";
+import { User } from "../Models/users.models.js";
 
 //register user
-const registeruser = asyncHandler(async (req, res) => {
+const registerUser = asyncHandler(async (req, res) => {
+  /* Validate input fields */
+  const { fullName, email, password } = req.body;
 
-    /* Validate input fields */
-    const{fullname, email, password}= req.body;
+  if ([fullName, email, password].some((field) => field?.trim() === "")) {
+    throw new ApiError(400, "All fields are required");
+  }
 
-    if([fullname,email,password].some((field)=>field?.trim()==="")
-    ){
-         throw new APIerror(400,"All fields are required"); 
-    }
+  const existingUser = await User.findOne({ email });
+  if (!existingUser) {
+    throw new ApiError(409, "User already exists");
+  }
+  const user = await User.create({
+    fullName,
+    email,
+    password,
+  });
 
-    const existinguser = await User.findone({$or:[{email},{username}]})
-    if(existinguser){
-        throw new APIerror (409,"User already exists");
-    }
-    const hashedpassword = await bcrypt.hash(password,10);
-    
-})
+  const createdUser = await User.findById(user._id).select(
+    "-password -refreshToken -__v",
+  );
+  if (!createdUser) {
+    throw new ApiError(500, "Failed to create user");
+  }
+  return res
+    .status(201)
+    .json(new ApiResponse(200, createdUser, "User created successfully"));
+});
 
 //loginuser
-const loginuser = asyncHandler( async (req,res)=>{
+const loginUser = asyncHandler(async (req, res) => {});
 
-})
+//logut user
 
-//logut user 
-
-const logoutuser = asyncHandler( async (req,res)=>{
-
-})
-
+const logoutUser = asyncHandler(async (req, res) => {});
 //user profile
 
-const getuserprofile = asyncHandler( async (req,res)=>{
-
-})
+const getUserProfile = asyncHandler(async (req, res) => {});
 
 //change password
 
-const changeuserpassword = asyncHandler( async (req,res)=>{
+const changeUserPassword = asyncHandler(async (req, res) => {});
 
-})
+export { registerUser, loginUser, logoutUser, getUserProfile, changeUserPassword };

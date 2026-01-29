@@ -2,20 +2,19 @@ import express from "express";
 const router = express.Router();
 
 //getting controllers
-const{
-    registeruser,
-    loginuser,
-    getuserprofile,
-    changeuserpassword,
-    logoutuser,
-} = require("../Controllers/user.controllers");
+import {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  changeUserPassword,
+  logoutUser,
+} from "../Controllers/user.controllers.js";
 
+router.route("/register").post(registerUser);
+router.route("/login").post(loginUser);
+router.route("/logout").post(logoutUser);
 
-router.route("/register").post(registeruser);
-router.route("/login").post(loginuser);
-router.route("/logout").post(logoutuser);
-
-router.route("/profile").get(getuserprofile);
-router.route("/changepassword").put(changeuserpassword);
+router.route("/profile").get(getUserProfile);
+router.route("/changepassword").put(changeUserPassword);
 
 export default router;

@@ -1,9 +1,9 @@
-import express from 'express';
+ import app from './app.js';
 import dotenv from 'dotenv';
 import connectDB from './Db/index.js';
 
-dotenv.config();
-const app = express();
+dotenv.config({path: './.env'});
+ 
 const PORT = process.env.PORT || 3000;
 connectDB().then(()=> {
     app.listen(PORT, () => {
