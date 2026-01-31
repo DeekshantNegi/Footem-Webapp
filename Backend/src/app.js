@@ -11,6 +11,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-app.get('/api/v1/users', userRouter );
+app.use('/api/v1/users', userRouter );
 
 export default app
