@@ -1,6 +1,7 @@
 import express from "express";
 const router = express.Router();
 import {verifyJWT} from "../Middlewares/auth.middleware.js";
+import { upload } from "../Middlewares/multer.middleware.js";
 
 //getting controllers
 import {
@@ -22,6 +23,6 @@ router.route("/refresh-token").post(refreshAccessToken);
 router.route("/userprofile").get( verifyJWT, getUserProfile).put( verifyJWT, updateProfile);
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
 router.route("/change-password").put(verifyJWT, changeUserPassword);
-router.route("/")
+ 
 
 export default router;

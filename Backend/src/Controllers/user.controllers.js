@@ -150,7 +150,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 //user profile
 
 const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user?._id).select("-password -refreshToken -__v");
+  const user = await User.findById(req.user?._id).select(
+    "-password -refreshToken -__v",
+  );
   if (!user) {
     throw new ApiError(404, "User not found");
   }
@@ -166,28 +168,32 @@ const updateProfile = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,
     { phone },
-    { new: true }
+    { new: true },
   ).select("-password -refreshToken -__v");
 
-  return res.json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
-
+  return res.json(
+    new ApiResponse(200, updatedUser, "Profile updated successfully"),
+  );
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-   if(!req.file) {
+  if (!req.file) {
     throw new ApiError(400, "No image uploaded");
   }
-  const avatarUrl = req.file?.path;
-  
+  const avatarUrl = req.file?.path.replace(/\\/g, "/");
+  if (!avatarUrl) {
+    throw new ApiError(400, "Avatar file missing");
+  }
+
   const uploadedImage = await uploadOnCloudinary(avatarUrl);
-  if(!uploadedImage){
+  if (!uploadedImage) {
     throw new ApiError(500, "Failed to upload avatar");
   }
-  
-    const user = await User.findByIdAndUpdate(
+
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     { avatar: uploadedImage.url },
-    { new: true }
+    { new: true },
   ).select("-password -refreshToken -__v");
   return res.json(new ApiResponse(200, user, "Avatar updated successfully"));
 });
