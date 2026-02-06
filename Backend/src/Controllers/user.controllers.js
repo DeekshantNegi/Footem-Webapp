@@ -163,7 +163,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
 //update profile
 
-const updateProfile = asyncHandler(async (req, res) => {
+const updateProfile = asyncHandler(async (req, res) => {    // have'nt tested this
   const { phone } = req.body;
   const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,
