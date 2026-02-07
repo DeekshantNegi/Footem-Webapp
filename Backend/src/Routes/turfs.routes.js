@@ -1,19 +1,12 @@
-const express = require("express")
+ import express from "express";
 const router = express.Router();
+import { verifyJWT, authorizeRoles } from "../Middlewares/auth.middleware";
 
-const{
-   createturf,
-   updateturf,
-   deleteturf,
-   getallturf,
 
-} = require("../Controllers/turfs.controllers");
 
-router.post("/createturf",createturf);
-router.put("/updateturf",updateturf);
-router.delete("/deleteturf",deleteturf);
 
-router.get("/allturfs",getallturf);
 
+router.get("/", getAllTurfs);
+router.route("/:id").get(getSingleTurf).put(verifyJWT, authorizeRoles("owner"), updateTurf).delete(verifyJWT, authorizeRoles("owner"), deleteTurf);
 module.exports = router;
 

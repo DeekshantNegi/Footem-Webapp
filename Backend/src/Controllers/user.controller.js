@@ -1,7 +1,7 @@
 import asyncHandler from "../Utils/asyncHandler.js";
 import ApiError from "../Utils/ApiError.js";
 import ApiResponse from "../Utils/ApiResponse.js";
-import { User } from "../Models/users.models.js";
+import { User } from "../Models/users.model.js";
 import jwt from "jsonwebtoken";
 import { uploadOnCloudinary } from "../Utils/Cloudinary.js";
 
@@ -21,9 +21,9 @@ const generateAccessAndRefreshTokens = async (userId) => {
 //register user
 const registerUser = asyncHandler(async (req, res) => {
   /* Validate input fields */
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, role } = req.body;
 
-  if ([fullName, email, password].some((field) => field?.trim() === "")) {
+  if ([fullName, email, password, role].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -35,6 +35,9 @@ const registerUser = asyncHandler(async (req, res) => {
     fullName,
     email,
     password,
+    role,
+    isOwnerRequested: role === "owner",
+    ownerRequestDetails: role === "owner" ? ownerRequestDetails : undefined,
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -45,7 +48,15 @@ const registerUser = asyncHandler(async (req, res) => {
   }
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User created successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        createdUser,
+        role === "owner"
+          ? "Registered as owner.Admin will verify your request."
+          : "User created successfully",
+      ),
+    );
 });
 
 //loginuser
@@ -163,7 +174,8 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
 //update profile
 
-const updateProfile = asyncHandler(async (req, res) => {    // have'nt tested this
+const updateProfile = asyncHandler(async (req, res) => {
+  // have'nt tested this
   const { phone } = req.body;
   const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,

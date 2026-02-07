@@ -28,6 +28,18 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "owner", "admin"],
       default: "user",
     },
+    isOwnerRequested: {
+      type: Boolean,
+      default: false,
+    },
+    ownerRequestDetails: {
+      turfName: String,
+      location: String,
+      city: String,
+      contactNumber: String,
+      businessLicenseNumber: String,
+      idProof: String,
+    },
     avatar: {
       type: String,
     },
