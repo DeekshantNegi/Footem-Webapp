@@ -176,12 +176,6 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
 const updateProfile = asyncHandler(async (req, res) => {
   // have'nt tested this
-  const { phone } = req.body;
-  const updatedUser = await User.findByIdAndUpdate(
-    req.user?._id,
-    { phone },
-    { new: true },
-  ).select("-password -refreshToken -__v");
 
   return res.json(
     new ApiResponse(200, updatedUser, "Profile updated successfully"),
@@ -197,14 +191,14 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file missing");
   }
 
-  const uploadedImage = await uploadOnCloudinary(avatarUrl);
+  const uploadedImage = await uploadOnCloudinary(avatarUrl, "avatars");
   if (!uploadedImage) {
     throw new ApiError(500, "Failed to upload avatar");
   }
 
   const user = await User.findByIdAndUpdate(
     req.user?._id,
-    { avatar: uploadedImage.url },
+    { avatar: uploadedImage.url, public_id: uploadedImage.public_id },
     { new: true },
   ).select("-password -refreshToken -__v");
   return res.json(new ApiResponse(200, user, "Avatar updated successfully"));

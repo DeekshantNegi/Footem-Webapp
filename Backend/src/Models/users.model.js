@@ -14,10 +14,6 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
     },
-    phone: {
-      type: String,
-      unique: true,
-    },
     password: {
       type: String,
       required: true,
@@ -33,15 +29,16 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     ownerRequestDetails: {
-      turfName: String,
-      location: String,
-      city: String,
-      contactNumber: String,
-      businessLicenseNumber: String,
-      idProof: String,
+      turfName: { type: String, required: true },
+      location: { type: String, required: true },
+      city: { type: String, required: true },
+      contactNumber: { type: String, required: true },
+      businessLicenseNumber: { type: String, required: true },
+      idProof: { type: String, required: true },
     },
     avatar: {
       type: String,
+      public_id : String,
     },
     refreshToken: {
       type: String,

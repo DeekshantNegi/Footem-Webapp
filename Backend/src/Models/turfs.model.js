@@ -7,7 +7,7 @@ const Turfschema = new mongoose.Schema(
       ref: "User",
       required: true
     },
-    Turfname: {
+    turfName: {
       type: String,
       required: true,
     },
@@ -27,6 +27,7 @@ const Turfschema = new mongoose.Schema(
     priceperhour: {
       type: Number,
       required: true,
+      min:0
     },
     isActive: {
       type: Boolean,
@@ -38,15 +39,24 @@ const Turfschema = new mongoose.Schema(
     },
     images: [
       {
-        type: String,
+        url: String,
+        public_id: String,
+        required: true
       },
     ],
-    amenities: [String],
+    amenities: [
+      {
+        type: String,
+        default: [], 
+      },
+    ],
     openTime: {
       type: String,
+      default: "00.00"
     },
     closeTime: {
       type: String,
+      default: "00.00"
     },
   },
   {

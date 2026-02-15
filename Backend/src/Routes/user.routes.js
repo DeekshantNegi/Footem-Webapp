@@ -13,7 +13,7 @@ import {
   updateProfile,
   updateUserAvatar,
   changeUserPassword,
-} from "../Controllers/user.controllers.js";
+} from "../Controllers/user.controller.js";
 
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);

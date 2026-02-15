@@ -8,16 +8,20 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const uploadOnCloudinary = async(localfilePath)=>{
+const uploadOnCloudinary = async(localfilePath, folder)=>{
     try{
        if(!localfilePath){
         return null;
        }
        const response = await cloudinary.uploader.upload(localfilePath, {
+        folder,
         resource_type: 'auto'
        } )
        fs.unlinkSync(localfilePath)
-       return response;
+       return {
+        url: response.secure_url,
+        public_id: response.public_id,
+       };
     } catch(error){
         fs.unlinkSync(localfilePath)
         console.error("Cloudinary upload error:", error);
