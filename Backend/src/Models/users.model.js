@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
       idProof: { type: String, required: true },
     },
     avatar: {
-      type: String,
+       url: String,
       public_id : String,
     },
     refreshToken: {

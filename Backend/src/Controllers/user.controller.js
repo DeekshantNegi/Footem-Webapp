@@ -198,7 +198,12 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
   const user = await User.findByIdAndUpdate(
     req.user?._id,
-    { avatar: uploadedImage.url, public_id: uploadedImage.public_id },
+    {
+      avatar: {
+        url: uploadedImage.url,
+        public_id: uploadedImage.public_id,
+      },
+    },
     { new: true },
   ).select("-password -refreshToken -__v");
   return res.json(new ApiResponse(200, user, "Avatar updated successfully"));
