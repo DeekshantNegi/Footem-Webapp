@@ -21,9 +21,9 @@ const generateAccessAndRefreshTokens = async (userId) => {
 //register user
 const registerUser = asyncHandler(async (req, res) => {
   /* Validate input fields */
-  const { fullName, email, password, role } = req.body;
+  const { fullName, email, password } = req.body;
 
-  if ([fullName, email, password, role].some((field) => field?.trim() === "")) {
+  if ([ fullName, email, password ].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -35,9 +35,6 @@ const registerUser = asyncHandler(async (req, res) => {
     fullName,
     email,
     password,
-    role,
-    isOwnerRequested: role === "owner",
-    ownerRequestDetails: role === "owner" ? ownerRequestDetails : undefined,
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -52,9 +49,7 @@ const registerUser = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         createdUser,
-        role === "owner"
-          ? "Registered as owner.Admin will verify your request."
-          : "User created successfully",
+           "User created successfully",
       ),
     );
 });

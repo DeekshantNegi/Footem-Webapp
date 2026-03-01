@@ -7,16 +7,18 @@ import {
   getSingleTurf,
   updateTurf,
   deleteTurf,
+  getMyTurfs,
   getAllTurfs,
 } from "../Controllers/turfs.controller.js";
 
 router.get("/", getAllTurfs);
+router.get("/my-turfs", verifyJWT, authorizeRoles("owner"), getMyTurfs);
 
 router.post(
-  "/create",
-  upload.array("images", 10),
+  "/",
   verifyJWT,
   authorizeRoles("owner"),
+  upload.array("images", 10),
   createTurf,
 );
 
@@ -30,5 +32,5 @@ router
     updateTurf,
   )
   .delete(verifyJWT, authorizeRoles("owner"), deleteTurf);
-  
-module.exports = router;
+
+export default router;

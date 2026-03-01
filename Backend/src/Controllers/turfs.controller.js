@@ -2,6 +2,7 @@ import asyncHandler from "../Utils/asyncHandler.js";
 import ApiError from "../Utils/ApiError.js";
 import ApiResponse from "../Utils/ApiResponse.js";
 import { User } from "../Models/users.model.js";
+import { Owner } from "../Models/owners.model.js";
 import {
   deleteFromCloudinary,
   uploadOnCloudinary,
@@ -10,16 +11,17 @@ import { Turf } from "../Models/turfs.model.js";
 
 //create turf
 const createTurf = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user?._id);
-
-  if (!user) {
-    throw new ApiError(404, "User not found");
+  const owner = req.owner; // Assuming the owner is set in the request by the authentication middleware
+ 
+  if (!owner) {
+    throw new ApiError(404, "Owner not found");
   }
 
   // ✅ Only approved owners can create turf
-  if (user.role !== "owner") {
-    throw new ApiError(403, "Only owners can create turf");
+  if (owner.status !== "approved") {
+    throw new ApiError(403, "Only approved owners can create turf");
   }
+     
   const {
     turfName,
     location,
@@ -51,7 +53,7 @@ const createTurf = asyncHandler(async (req, res) => {
   }
 
   const turf = await Turf.create({
-    owner: req.user._id,
+    owner: req.owner._id,
     turfName,
     location,
     city,
@@ -92,20 +94,20 @@ const updateTurf = asyncHandler(async (req, res) => {
   if (!turf) {
     throw new ApiError(404, "Turf not found");
   }
-  if (turf.owner.toString() !== req.user?._id.toString()) {
+  if (turf.owner.toString() !== req.owner?._id.toString()) {
     throw new ApiError(403, "You are not authorized to update this turf");
   }
-  const [
-    turfName,
-    location,
-    city,
-    description,
-    priceperhour,
-    turfType,
-    amenities,
-    openTime,
-    closeTime,
-  ] = req.body;
+  const fields = [
+    "turfName",
+    "location",
+    "city",
+    "description",
+    "priceperhour",
+    "turfType",
+    "amenities",
+    "openTime",
+    "closeTime",
+  ];
 
   fields.forEach((field) => {
     if (req.body[field] !== undefined) {
@@ -207,4 +209,4 @@ const getAllTurfs = asyncHandler(async (req, res) => {
     );
 });
 
-export { createTurf, getSingleTurf, updateTurf, deleteTurf, getAllTurfs };
+export { createTurf, getSingleTurf, updateTurf, deleteTurf, getMyTurfs, getAllTurfs };

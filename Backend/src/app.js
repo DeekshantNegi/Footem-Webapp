@@ -2,6 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser';
 import userRouter from './Routes/user.routes.js';
+import adminRouter from './Routes/admin.routes.js';
+import turfRouter from './Routes/turfs.routes.js';
 
 
 const app = express()
@@ -13,5 +15,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 app.use('/api/v1/users', userRouter );
+app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/turfs', turfRouter);
 
 export default app

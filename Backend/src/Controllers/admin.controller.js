@@ -1,11 +1,14 @@
 import { User } from "../Models/users.model.js";
+import { Owner } from "../Models/owners.model.js";
 import { Turf } from "../Models/turfs.model.js";
 import asyncHandler from "../Utils/asyncHandler.js";
 import ApiError from "../Utils/ApiError.js";
 import ApiResponse from "../Utils/ApiResponse.js";
+import { deleteFromCloudinary } from "../Utils/Cloudinary.js";
+
 
 export const getAllOwnerRequests = asyncHandler(async (req, res) => {
-  const ownerRequests = await User.find({ isOwnerRequested: true });
+  const ownerRequests = await Owner.find({status: "pending"}).populate("user", "fullName email");
   return res
     .status(200)
     .json(
@@ -17,44 +20,48 @@ export const getAllOwnerRequests = asyncHandler(async (req, res) => {
     );
 });
 export const approveOwner = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.userId);
-  if (!user || !user.isOwnerRequested) {
+  const owner = await Owner.findById(req.params.id);
+  if (!owner) {
     throw new ApiError(404, "Owner request not found");
   }
-  user.role = "owner";
-  user.isOwnerRequested = false;
-  await user.save();
+  owner.status = "verified";
+  await owner.save();
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "Owner request approved successfully"));
+    .json(new ApiResponse(200, owner, "Owner request approved successfully"));
 });
 export const rejectOwner = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.userId);
-  if (!user || !user.isOwnerRequested) {
+  const owner = await Owner.findById(req.params.id);
+  if (!owner) {
     throw new ApiError(404, "Owner request not found");
   }
-  user.isOwnerRequested = false;
-  user.ownerRequestDetails = undefined;
-  await user.save();
+  owner.status = "rejected";
+  await owner.save();
+
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "Owner request rejected"));
+    .json(new ApiResponse(200, owner, "Owner request rejected"));
 });
+
 export const getAllTurfs = asyncHandler(async (req, res) => {
   const turfs = await Turf.find().populate("owner", "fullName email");
   return res
     .status(200)
     .json(new ApiResponse(200, turfs, "All turfs retrieved successfully"));
 });
-export const deleteTurf = async (req, res) => {
-  const turf = await Turf.findByIdAndDelete(req.params.turfId);
+
+export const deleteTurf =  asyncHandler(async (req, res) => {
+  const turf = await Turf.findById(req.params?.turfId);
 
   if (!turf) {
     throw new ApiError(404, "Turf not found");
   }
 
-  // Also remove turf ref from owner
-  await User.findByIdAndUpdate(turf.owner, { turf: null });
+  // Delete images from Cloudinary
+  if (turf.images && turf.images.length > 0) {
+      await deleteFromCloudinary(turf.images);
+   }
+   await Turf.findByIdAndDelete(req.params?.turfId);
 
-  res.status(200).json(new ApiResponse(200, null, "Turf deleted successfully"));
-};
+ return res.status(200).json(new ApiResponse(200, {}, "Turf deleted successfully"));
+});

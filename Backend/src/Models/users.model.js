@@ -24,18 +24,6 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "owner", "admin"],
       default: "user",
     },
-    isOwnerRequested: {
-      type: Boolean,
-      default: false,
-    },
-    ownerRequestDetails: {
-      turfName: { type: String, required: true },
-      location: { type: String, required: true },
-      city: { type: String, required: true },
-      contactNumber: { type: String, required: true },
-      businessLicenseNumber: { type: String, required: true },
-      idProof: { type: String, required: true },
-    },
     avatar: {
        url: String,
       public_id : String,

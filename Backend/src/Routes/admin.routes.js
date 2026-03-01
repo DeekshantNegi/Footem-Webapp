@@ -2,8 +2,12 @@ import express from "express";
 import { verifyJWT, authorizeRoles } from "../Middlewares/auth.middleware.js";
 
 import {
-
-} from "../Controllers/admin.controllers.js";
+ getAllOwnerRequests,
+    approveOwner,
+    rejectOwner,
+    getAllTurfs,
+    deleteTurf,
+} from "../Controllers/admin.controller.js";
 
 const router = express.Router();
 
