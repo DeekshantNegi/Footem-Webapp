@@ -12,6 +12,6 @@ const router = express.Router();
 router.post("/apply", verifyJWT, applyForOwner);
 
 // Get logged-in owner's profile
-router.get("/me", verifyJWT, getMyOwnerProfile);
+router.get("/me", verifyJWT, authorizeRoles("owner"), getMyOwnerProfile);
 
 export default router;

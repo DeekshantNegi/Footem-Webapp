@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import userRouter from './Routes/user.routes.js';
 import adminRouter from './Routes/admin.routes.js';
 import turfRouter from './Routes/turfs.routes.js';
+import ownerRouter from './Routes/owner.routes.js';
 
 
 const app = express()
@@ -17,5 +18,6 @@ app.use(cookieParser());
 app.use('/api/v1/users', userRouter );
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/turfs', turfRouter);
+app.use('/api/v1/owners', ownerRouter);
 
 export default app

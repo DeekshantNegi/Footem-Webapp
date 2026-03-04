@@ -1,4 +1,4 @@
-import Owner from "../Models/owner.model.js";
+import { Owner } from "../Models/owners.model.js";
 import ApiError from "../Utils/ApiError.js";
 import APIresponse from "../Utils/ApiResponse.js";
 import asyncHandler from "../Utils/asyncHandler.js";

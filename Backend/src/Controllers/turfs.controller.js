@@ -1,8 +1,7 @@
 import asyncHandler from "../Utils/asyncHandler.js";
 import ApiError from "../Utils/ApiError.js";
 import ApiResponse from "../Utils/ApiResponse.js";
-import { User } from "../Models/users.model.js";
-import { Owner } from "../Models/owners.model.js";
+ 
 import {
   deleteFromCloudinary,
   uploadOnCloudinary,
@@ -70,7 +69,7 @@ const createTurf = asyncHandler(async (req, res) => {
   }
   return res
     .status(201)
-    .json(new ApiResponse(200, turf, "Turf created successfully"));
+    .json(new ApiResponse(201, turf, "Turf created successfully"));
 });
 
 // get single turf
@@ -79,7 +78,7 @@ const getSingleTurf = asyncHandler(async (req, res) => {
     "owner",
     "fullName email",
   );
-  if (!turf) {
+  if (!turf || !turf.isActive) {
     throw new ApiError(404, "Turf not found");
   }
   return res
@@ -118,7 +117,7 @@ const updateTurf = asyncHandler(async (req, res) => {
   if (req.files && req.files.length > 0) {
     //delete old images from cloudinary
     await deleteFromCloudinary(turf.images);
-  }
+  
   let newImages = [];
   for (const file of req.files) {
     const uploaded = await uploadOnCloudinary(file.path, "turfs");
@@ -126,6 +125,9 @@ const updateTurf = asyncHandler(async (req, res) => {
 
     turf.images = newImages;
   }
+
+
+}
   await turf.save();
 
   return res
@@ -139,7 +141,7 @@ const deleteTurf = asyncHandler(async (req, res) => {
   if (!turf) {
     throw new ApiError(404, "Turf not found");
   }
-  if (turf.owner.toString() !== req.user._id.toString()) {
+  if (turf.owner.toString() !== req.owner._id.toString()) {
     throw new ApiError(403, "You are not authorized to delete this turf");
   }
   turf.isActive = false;
@@ -151,7 +153,7 @@ const deleteTurf = asyncHandler(async (req, res) => {
 
 //get my turf
 const getMyTurfs = asyncHandler(async (req, res) => {
-  const turfs = await Turf.find({ owner: req.user._id });
+  const turfs = await Turf.find({ owner: req.owner._id });
   if (!turfs || turfs.length === 0) {
     throw new ApiError(404, "No turfs found for this owner");
   }
@@ -172,6 +174,10 @@ const getAllTurfs = asyncHandler(async (req, res) => {
     order = "desc",
   } = req.query;
 
+  const pageNumber = Number(page);
+  const limitNumber = Number(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
   const query = {
     isActive: true,
   };
@@ -189,13 +195,11 @@ const getAllTurfs = asyncHandler(async (req, res) => {
     if (maxPrice) query.priceperhour.$lte = Number(maxPrice);
   }
 
-  const skip = (page - 1) * limit;
-
   const turfs = await Turf.find(query)
     .populate("owner", "fullName email")
     .sort({ [sortBy]: order === "asc" ? 1 : -1 })
     .skip(skip)
-    .limit(Number(limit));
+    .limit(limitNumber);
 
   const total = await Turf.countDocuments(query);
   return res
