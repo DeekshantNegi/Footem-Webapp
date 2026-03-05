@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.use(verifyJWT);
 
-router.post('/', createBooking);
+router.post('/:turfId', createBooking);
 router.get('/my-bookings', getMyBookings);
 router.route('/:bookingId').get(getBookingById).patch(cancelBooking);
 router.get('/owner/:turfId', authorizeRoles("owner"), getOwnerBookings);

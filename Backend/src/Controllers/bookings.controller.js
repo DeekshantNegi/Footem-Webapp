@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 
 import { Turf } from "../Models/Turf.js";
 import { Booking } from "../Models/Booking.js";
@@ -7,11 +6,11 @@ import ApiError from "../Utils/ApiError.js";
 import APIresponse from "../Utils/ApiResponse.js";
 
 const createBooking = asyncHandler(async (req, res) => {
-  const { date, slot } = req.body;
+  const { date, slot, phone } = req.body;
   const { turfId } = req.params;
   const userId = req.user?._id;
 
-  if (!date || !slot) {
+  if (!date || !slot || !phone) {
     throw new ApiError(400, "All fields are required");
   }
   if (!userId) {
@@ -48,6 +47,7 @@ const createBooking = asyncHandler(async (req, res) => {
     totalPrice: price,
     bookingStatus: "pending",
     paymentStatus: "pending",
+    phone,
   });
   if (!booking) {
     throw new ApiError(500, "Failed to create booking");
@@ -78,7 +78,7 @@ const getMyBookings = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized");
   }
   const bookings = await Booking.find({ userId }).populate("turfId");
-  if (!bookings) {
+  if (bookings.length===0) {
     throw new ApiError(404, "No bookings found");
   }
   return res
@@ -122,6 +122,14 @@ const getBookingById = asyncHandler(async (req, res) => {
 
 const getOwnerBookings = asyncHandler(async (req, res) => {
   const { turfId } = req.params;
+  const turf = await Turf.findById(turfId);
+  if (!turf) {
+    throw new ApiError(404, "Turf not found");
+  }
+  
+  if(turf.owner.toString() !== req.user?._id.toString()){
+    throw new ApiError(403, "You are not authorized");
+  }
   const bookings = await Booking.find({ turfId }).populate(
     "userId",
     "name email",
