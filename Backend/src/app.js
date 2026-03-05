@@ -5,6 +5,7 @@ import userRouter from './Routes/user.routes.js';
 import adminRouter from './Routes/admin.routes.js';
 import turfRouter from './Routes/turfs.routes.js';
 import ownerRouter from './Routes/owner.routes.js';
+import bookingRouter from './Routes/bookings.routes.js';
 
 
 const app = express()
@@ -19,5 +20,6 @@ app.use('/api/v1/users', userRouter );
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/turfs', turfRouter);
 app.use('/api/v1/owners', ownerRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 export default app

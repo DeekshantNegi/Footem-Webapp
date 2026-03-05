@@ -17,11 +17,7 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    startTime: {
-      type: String,
-      required: true,
-    },
-    endTime: {
+    slot:{
       type: String,
       required: true,
     },
@@ -31,7 +27,7 @@ const bookingSchema = new mongoose.Schema(
     },
     bookingStatus: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled", "completed"],
+      enum: ["pending", "confirmed", "cancelled"],
       default: "pending",
     },
     paymentStatus: {
@@ -43,6 +39,10 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Payment",
     },
+    phone:{
+      type: String,
+        required: true,
+    }
   },
   {
     timestamps: true,
