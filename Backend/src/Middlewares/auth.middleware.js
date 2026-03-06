@@ -41,7 +41,7 @@ export const authorizeRoles = (...roles) => {
       let authorization = false;
       if (roles.includes("owner")) {
         const owner = await Owner.findOne({ user: req.user._id });
-        if (!owner || owner.status !== "approved") {
+        if (!owner || owner.status !== "verified") {
           throw new ApiError(403, "Owner not approved");
         }
         req.owner = owner;

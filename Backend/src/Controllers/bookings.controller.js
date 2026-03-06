@@ -1,6 +1,6 @@
 
-import { Turf } from "../Models/Turf.js";
-import { Booking } from "../Models/Booking.js";
+import { Turf } from "../Models/turfs.model.js";
+import { Booking } from "../Models/booking.model.js";
 import asyncHandler from "../Utils/asyncHandler.js";
 import ApiError from "../Utils/ApiError.js";
 import APIresponse from "../Utils/ApiResponse.js";

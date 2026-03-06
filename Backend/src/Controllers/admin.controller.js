@@ -20,7 +20,7 @@ export const getAllOwnerRequests = asyncHandler(async (req, res) => {
     );
 });
 export const approveOwner = asyncHandler(async (req, res) => {
-  const owner = await Owner.findById(req.params.id);
+  const owner = await Owner.findOne({user:req.params.userId});
   if (!owner) {
     throw new ApiError(404, "Owner request not found");
   }
