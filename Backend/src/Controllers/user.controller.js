@@ -4,6 +4,7 @@ import ApiResponse from "../Utils/ApiResponse.js";
 import { User } from "../Models/users.model.js";
 import jwt from "jsonwebtoken";
 import { uploadOnCloudinary } from "../Utils/Cloudinary.js";
+import { compressImage } from "../Utils/compressimage.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -185,8 +186,10 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   if (!avatarUrl) {
     throw new ApiError(400, "Avatar file missing");
   }
+  const compressedPath = `./public/temp/compressed-${Date.now()}-${Math.floor(Math.random()*10000)}.jpg`;
+  const compressedImage = await compressImage(avatarUrl, compressedPath);
 
-  const uploadedImage = await uploadOnCloudinary(avatarUrl, "avatars");
+  const uploadedImage = await uploadOnCloudinary(avatarUrl, compressedImage, "avatars");
   if (!uploadedImage) {
     throw new ApiError(500, "Failed to upload avatar");
   }

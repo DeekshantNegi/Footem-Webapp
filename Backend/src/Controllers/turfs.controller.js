@@ -1,7 +1,7 @@
 import asyncHandler from "../Utils/asyncHandler.js";
 import ApiError from "../Utils/ApiError.js";
 import ApiResponse from "../Utils/ApiResponse.js";
- 
+import { compressImage } from "../Utils/compressimage.js";
 import {
   deleteFromCloudinary,
   uploadOnCloudinary,
@@ -11,16 +11,16 @@ import { Turf } from "../Models/turfs.model.js";
 //create turf
 const createTurf = asyncHandler(async (req, res) => {
   const owner = req.owner; // Assuming the owner is set in the request by the authentication middleware
- 
+
   if (!owner) {
     throw new ApiError(404, "Owner not found");
   }
 
   // ✅ Only approved owners can create turf
-  if (owner.status !== "approved") {
+  if (owner.status !== "verified") {
     throw new ApiError(403, "Only approved owners can create turf");
   }
-     
+
   const {
     turfName,
     location,
@@ -44,12 +44,18 @@ const createTurf = asyncHandler(async (req, res) => {
   if (!req.files || req.files.length === 0) {
     throw new ApiError(400, "At least one turf image is required");
   }
-  if (req.files || req.files.length > 0) {
-    for (const file of req.files) {
-      const uploaded = await uploadOnCloudinary(file.path, "turfs");
-      uploadedImages.push(uploaded);
-    }
-  }
+  uploadedImages = await Promise.all(
+    req.files.map(async (file) => {
+      const compressedPath = `./public/temp/compressed-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
+      const compressedImage = await compressImage(file.path, compressedPath);
+      const uploaded = await uploadOnCloudinary(
+        file.path,
+        compressedImage,
+        "turfs",
+      );
+      return uploaded;
+    }),
+  );
 
   const turf = await Turf.create({
     owner: req.owner._id,
@@ -74,10 +80,13 @@ const createTurf = asyncHandler(async (req, res) => {
 
 // get single turf
 const getSingleTurf = asyncHandler(async (req, res) => {
-  const turf = await Turf.findById(req.params.id).populate(
-    "owner",
-    "fullName email",
-  );
+  const turf = await Turf.findById(req.params.id).populate({
+    path: "owner",
+    populate: {
+      path: "user",
+      select: "fullName email",
+    },
+  });
   if (!turf || !turf.isActive) {
     throw new ApiError(404, "Turf not found");
   }
@@ -117,17 +126,22 @@ const updateTurf = asyncHandler(async (req, res) => {
   if (req.files && req.files.length > 0) {
     //delete old images from cloudinary
     await deleteFromCloudinary(turf.images);
-  
-  let newImages = [];
-  for (const file of req.files) {
-    const uploaded = await uploadOnCloudinary(file.path, "turfs");
-    newImages.push(uploaded);
 
+    let newImages = [];
+    newImages = await Promise.all(
+      req.files.map(async (file) => {
+        const compressedPath = `./public/temp/compressed-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
+        const compressedImage = await compressImage(file.path, compressedPath);
+        const uploaded = await uploadOnCloudinary(
+          file.path,
+          compressedImage,
+          "turfs",
+        );
+        return uploaded;
+      }),
+    );
     turf.images = newImages;
   }
-
-
-}
   await turf.save();
 
   return res
@@ -213,4 +227,11 @@ const getAllTurfs = asyncHandler(async (req, res) => {
     );
 });
 
-export { createTurf, getSingleTurf, updateTurf, deleteTurf, getMyTurfs, getAllTurfs };
+export {
+  createTurf,
+  getSingleTurf,
+  updateTurf,
+  deleteTurf,
+  getMyTurfs,
+  getAllTurfs,
+};
