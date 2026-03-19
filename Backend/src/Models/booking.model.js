@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-
 const bookingSchema = new mongoose.Schema(
   {
     userId: {
@@ -17,7 +16,7 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    slot:{
+    slot: {
       type: String,
       required: true,
     },
@@ -27,7 +26,7 @@ const bookingSchema = new mongoose.Schema(
     },
     bookingStatus: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
+      enum: ["pending", "confirmed", "completed", "cancelled"],
       default: "pending",
     },
     paymentStatus: {
@@ -39,14 +38,16 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Payment",
     },
-    phone:{
+    phone: {
       type: String,
-        required: true,
-    }
+      required: true,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-export const Booking = mongoose.model("Booking", bookingSchema );
+bookingSchema.index({ turfId: 1, date: 1, slot: 1 }, { unique: true });
+
+export const Booking = mongoose.model("Booking", bookingSchema);

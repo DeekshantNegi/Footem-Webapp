@@ -17,11 +17,11 @@ const createBooking = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized");
   }
 
-  const turf = await Turf.findById(turfId);
+  const turf = await Turf.findById(turfId).populate("owner");
   if (!turf || turf.isActive === false) {
     throw new ApiError(404, "Turf not found or is not active");
   }
-  if (turf.owner.toString() === req.user._id.toString()) {
+  if (turf.owner.user.toString() === req.user._id.toString()) {
     throw new ApiError(403, "Owner cannot book their own turf");
   }
   const price = turf.priceperhour;
@@ -30,7 +30,7 @@ const createBooking = asyncHandler(async (req, res) => {
     turfId,
     date,
     slot,
-    bookingStatus: { $ne: "cancelled" },
+    bookingStatus: { $in: ["pending", "confirmed"] },
   });
 
   if (existingBooking) {
@@ -39,6 +39,15 @@ const createBooking = asyncHandler(async (req, res) => {
       "Turf is already booked for the selected time slot",
     );
   }
+
+ const [startHour]= slot.split("-");
+ const bookingDateTime = new Date(date);
+ bookingDateTime.setHours(startHour, 0 ,0 ,0);
+
+ if(bookingDateTime < new Date()){
+  throw new ApiError(400, "Cannot book for past date and time");
+ }
+
   const booking = await Booking.create({
     userId,
     turfId,
@@ -122,12 +131,12 @@ const getBookingById = asyncHandler(async (req, res) => {
 
 const getOwnerBookings = asyncHandler(async (req, res) => {
   const { turfId } = req.params;
-  const turf = await Turf.findById(turfId);
+  const turf = await Turf.findById(turfId).populate("owner");
   if (!turf) {
     throw new ApiError(404, "Turf not found");
   }
   
-  if(turf.owner.toString() !== req.user?._id.toString()){
+  if(turf.owner.user.toString() !== req.user?._id.toString()){
     throw new ApiError(403, "You are not authorized");
   }
   const bookings = await Booking.find({ turfId }).populate(
