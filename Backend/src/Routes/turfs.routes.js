@@ -9,10 +9,12 @@ import {
   deleteTurf,
   getMyTurfs,
   getAllTurfs,
+  availableSlots,
 } from "../Controllers/turfs.controller.js";
 
 router.get("/", getAllTurfs);
 router.get("/my-turfs", verifyJWT, authorizeRoles("owner"), getMyTurfs);
+router.get('/:id/available-slots', availableSlots);
 
 router.post(
   "/",
@@ -32,5 +34,7 @@ router
     updateTurf,
   )
   .delete(verifyJWT, authorizeRoles("owner"), deleteTurf);
+
+ 
 
 export default router;

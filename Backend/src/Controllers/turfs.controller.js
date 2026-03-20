@@ -7,6 +7,7 @@ import {
   uploadOnCloudinary,
 } from "../Utils/Cloudinary.js";
 import { Turf } from "../Models/turfs.model.js";
+import { Booking } from "../Models/booking.model.js";
 
 //create turf
 const createTurf = asyncHandler(async (req, res) => {
@@ -227,6 +228,34 @@ const getAllTurfs = asyncHandler(async (req, res) => {
     );
 });
 
+const availableSlots = asyncHandler(async (req, res) => {
+  const { date } = req.query;
+  if(!date){
+    throw new ApiError(400, "Date query parameter is required");
+  }
+  
+  const turf = await Turf.findById(req.params.id);
+  if (!turf) {
+    throw new ApiError(404, "Turf not found");
+  }
+   
+  const allSlots = generateSlots(turf.openTime, turf.closeTime);
+
+  const bookings = await Booking.find({
+    turfId: req.params.id,
+    date: new Date(date),
+    bookingStatus: { $in: ["pending", "confirmed"] },
+  }).select("slot -_id");
+
+  const bookedSlots = new Set(bookings.map((b) => b.slot));
+
+  let availableSlots = allSlots.filter(slot => !bookedSlots.has(slot));
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, availableSlots, "Available slots retrieved successfully"));
+});
+
 export {
   createTurf,
   getSingleTurf,
@@ -234,4 +263,5 @@ export {
   deleteTurf,
   getMyTurfs,
   getAllTurfs,
+  availableSlots,
 };
