@@ -1,9 +1,9 @@
-
 import { Turf } from "../Models/turfs.model.js";
 import { Booking } from "../Models/booking.model.js";
 import asyncHandler from "../Utils/asyncHandler.js";
 import ApiError from "../Utils/ApiError.js";
 import APIresponse from "../Utils/ApiResponse.js";
+import {generateSlots} from "../Utils/generateSlots.js";
 
 const createBooking = asyncHandler(async (req, res) => {
   const { date, slot, phone } = req.body;
@@ -21,6 +21,13 @@ const createBooking = asyncHandler(async (req, res) => {
   if (!turf || turf.isActive === false) {
     throw new ApiError(404, "Turf not found or is not active");
   }
+
+  const allSlots = generateSlots(turf.openTime, turf.closeTime);
+
+  if (!allSlots.includes(slot)) {
+    throw new ApiError(400, "Invalid time slot");
+  }
+
   if (turf.owner.user.toString() === req.user._id.toString()) {
     throw new ApiError(403, "Owner cannot book their own turf");
   }
@@ -40,13 +47,13 @@ const createBooking = asyncHandler(async (req, res) => {
     );
   }
 
- const [startHour]= slot.split("-");
- const bookingDateTime = new Date(date);
- bookingDateTime.setHours(startHour, 0 ,0 ,0);
+  const [startHour] = slot.split("-");
+  const bookingDateTime = new Date(date);
+  bookingDateTime.setHours(startHour, 0, 0, 0);
 
- if(bookingDateTime < new Date()){
-  throw new ApiError(400, "Cannot book for past date and time");
- }
+  if (bookingDateTime < new Date()) {
+    throw new ApiError(400, "Cannot book for past date and time");
+  }
 
   const booking = await Booking.create({
     userId,
@@ -87,7 +94,7 @@ const getMyBookings = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized");
   }
   const bookings = await Booking.find({ userId }).populate("turfId");
-  if (bookings.length===0) {
+  if (bookings.length === 0) {
     throw new ApiError(404, "No bookings found");
   }
   return res
@@ -135,8 +142,8 @@ const getOwnerBookings = asyncHandler(async (req, res) => {
   if (!turf) {
     throw new ApiError(404, "Turf not found");
   }
-  
-  if(turf.owner.user.toString() !== req.user?._id.toString()){
+
+  if (turf.owner.user.toString() !== req.user?._id.toString()) {
     throw new ApiError(403, "You are not authorized");
   }
   const bookings = await Booking.find({ turfId }).populate(
