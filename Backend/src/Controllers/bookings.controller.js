@@ -62,7 +62,6 @@ const createBooking = asyncHandler(async (req, res) => {
     slot,
     totalPrice: price,
     bookingStatus: "pending",
-    paymentStatus: "pending",
     phone,
   });
   if (!booking) {
@@ -79,7 +78,7 @@ const confirmBooking = asyncHandler(async (req, res) => {
   if (!booking) {
     throw new ApiError(404, "Booking not found");
   }
-  booking.paymentStatus = "paid";
+  // write payment success 
   booking.bookingStatus = "confirmed";
   await booking.save();
 
@@ -115,7 +114,7 @@ const cancelBooking = asyncHandler(async (req, res) => {
     throw new ApiError(403, "You are not authorized to cancel this booking");
   }
   booking.bookingStatus = "cancelled";
-  booking.paymentStatus = "failed";
+  
   await booking.save();
   return res
     .status(200)
