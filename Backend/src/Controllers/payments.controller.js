@@ -66,7 +66,10 @@ const verifyPayment = asyncHandler(async (req, res) => {
     razorpaySignature: razorpay_signature,
     paymentStatus: "completed",
    });
-
+   
+   if(!payment){
+     throw new ApiError(500, "Failed to record payment");
+   }
    // Update booking status to confirmed
    booking.bookingStatus = "confirmed";
    booking.payment = payment._id;
