@@ -2,6 +2,19 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IMG from "../assets/back.jpg";
 import img from "../assets/img2.jpeg";
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_BASE_URL,
+});
+
+api.interceptors.request.use((config)=>{
+  const token = localStorage.getItem("token");
+  if(token){
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+})
 
 const Signup = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -17,15 +30,24 @@ const Signup = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSignUp) {
+    try{
+      if (isSignUp) {
       console.log("Signing Up:", formData);
       // Call signup API here
+      const res= await api.post("/register", formData);
+     
+
     } else {
       console.log("Signing In:", formData);
       // Call signin API here
+      const res= await api.post("/login", formData);
+      localStorage.setItem("token", res.data.token);
     }
+  }catch(err){
+    console.error("Error during authentication:", err);
+  }
   };
 
   const swapform = {
