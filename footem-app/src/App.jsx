@@ -10,10 +10,12 @@ import Dashboard from "./Pages/Dashboard";
 import Turf from "./Pages/Turfs";
 import { TurfProvider } from "./context/TurfContext";
 import { BookingProvider } from "./context/BookingContext";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 function App() {
   return (
     <>
+    <ToastContainer />
       <TurfProvider>
         <BookingProvider>
           <div className="App">
