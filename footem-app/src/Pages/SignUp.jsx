@@ -45,7 +45,6 @@ const FormPanel = ({
             value={formData.fullName}
             onChange={handleChange}
             disabled={loading}
-            required
             className={`w-full border-b border-gray-300 px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.general ? "border-red-500" : ""}`}
           />
         </div>
@@ -59,7 +58,6 @@ const FormPanel = ({
           value={formData.email}
           onChange={handleChange}
           disabled={loading}
-          required
           className={`w-full border-b border-gray-300  px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.email || error?.general ? "border-red-500" : ""}`}
         />
       </div>
@@ -73,7 +71,6 @@ const FormPanel = ({
           onChange={handleChange}
           disabled={loading}
           minLength="6"
-          required
           className={`w-full border-b border-gray-300  px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.password || error?.general ? "border-red-500" : ""}`}
         />
       </div>
@@ -98,6 +95,7 @@ const FormPanel = ({
     </p>
     {error.email && (<p className="text-center text-red-500 mt-2 text-sm">{error.email}</p>)}
     {error.password && (<p className="text-center text-red-500 mt-2 text-sm">{error.password}</p>)}
+    {error.general && (<p className="text-center text-red-500 mt-2 text-sm">{error.general}</p>)}
   </motion.div>
 );
 
@@ -146,7 +144,6 @@ const Signup = () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setError(validationErrors);
-      toast.error("Please fix errors");
       return;
     }
     setLoading(true);
@@ -169,6 +166,11 @@ const Signup = () => {
     } catch (err) {
       console.error("Error during authentication:", err);
       setLoading(false);
+      const message = err.response?.data?.message || "An error occurred. Please try again.";
+      setError((prev)=>({
+        ...prev,
+        general: message,
+      }));
       toast.error("Something went wrong. Please try again.");
     }
   };
