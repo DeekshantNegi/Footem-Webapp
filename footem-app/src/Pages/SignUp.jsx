@@ -5,6 +5,7 @@ import img from "../assets/img2.jpeg";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -25,6 +26,8 @@ const FormPanel = ({
   error,
   toggleForm,
   swapform,
+  showPassword,
+  setShowPassword
 }) => (
   <motion.div
     animate={{ x: isMobile ? "0%" : isSignUp ? "100%" : "0%" }}
@@ -44,7 +47,6 @@ const FormPanel = ({
             placeholder="FullName"
             value={formData.fullName}
             onChange={handleChange}
-            disabled={loading}
             className={`w-full border-b border-gray-300 px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.general ? "border-red-500" : ""}`}
           />
         </div>
@@ -57,22 +59,26 @@ const FormPanel = ({
           placeholder="Email"
           value={formData.email}
           onChange={handleChange}
-          disabled={loading}
           className={`w-full border-b border-gray-300  px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.email || error?.general ? "border-red-500" : ""}`}
         />
       </div>
 
-      <div>
+      <div className="relative">
         <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           name="password"
           placeholder="Password"
           value={formData.password}
           onChange={handleChange}
-          disabled={loading}
           minLength="6"
-          className={`w-full border-b border-gray-300  px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.password || error?.general ? "border-red-500" : ""}`}
+          className={` w-full border-b border-gray-300  px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.password || error?.general ? "border-red-500" : ""}`}
         />
+        <span 
+         onClick={() => setShowPassword(!showPassword)}
+         className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer active:scale-105 transition-all duration-300 text-gray-600"
+         >
+          {showPassword ? <FaEyeSlash /> : <FaEye />}
+        </span>
       </div>
 
       <button
@@ -93,9 +99,15 @@ const FormPanel = ({
         {isSignUp ? "Sign In" : "Sign Up"}
       </button>
     </p>
-    {error.email && (<p className="text-center text-red-500 mt-2 text-sm">{error.email}</p>)}
-    {error.password && (<p className="text-center text-red-500 mt-2 text-sm">{error.password}</p>)}
-    {error.general && (<p className="text-center text-red-500 mt-2 text-sm">{error.general}</p>)}
+    {error.email && (
+      <p className="text-center text-red-500 mt-2 text-sm">{error.email}</p>
+    )}
+    {error.password && (
+      <p className="text-center text-red-500 mt-2 text-sm">{error.password}</p>
+    )}
+    {error.general && (
+      <p className="text-center text-red-500 mt-2 text-sm">Invalid credentials</p>
+    )}
   </motion.div>
 );
 
@@ -109,6 +121,7 @@ const Signup = () => {
   });
   const [error, setError] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const toggleForm = () => setIsSignUp(!isSignUp);
 
@@ -149,14 +162,13 @@ const Signup = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        console.log("Signing Up:", formData);
         // Call signup API here
         const res = await api.post("/users/register", formData);
         setLoading(false);
+        
         toast.success("Registration successful! Please sign in.");
         toggleForm();
       } else {
-        console.log("Signing In:", formData);
         // Call signin API here
         const res = await api.post("/users/login", formData);
         setLoading(false);
@@ -166,8 +178,9 @@ const Signup = () => {
     } catch (err) {
       console.error("Error during authentication:", err);
       setLoading(false);
-      const message = err.response?.data?.message || "An error occurred. Please try again.";
-      setError((prev)=>({
+      const message =
+        err.response?.data?.message || "An error occurred. Please try again.";
+      setError((prev) => ({
         ...prev,
         general: message,
       }));
@@ -204,6 +217,8 @@ const Signup = () => {
             error={error}
             toggleForm={toggleForm}
             swapform={swapform}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
           />
           <motion.div
             transition={swapform}
