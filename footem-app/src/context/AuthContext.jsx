@@ -1,4 +1,5 @@
 import { createContext,useState } from "react";
+import api from "../api/Axios.js";
 
 export const AuthContext = createContext();
 
@@ -8,14 +9,19 @@ export const AuthProvider = ({children})=>{
     );
     
 const login = (userData) =>{
-    localStorage.setItem("token", userData.token);
-    localStorage.setItem("user", JSON.stringify(userData.user));
-    setUser(userData.user);
+    localStorage.setItem("user", JSON.stringify(userData.data.user));
+    setUser(userData.data.user);
 }
 
-const logout =()=>{
-    localStorage.clear();
-    setUser(null);
+const logout =async ()=>{
+    try{
+        await api.post("/users/logout", {});
+        localStorage.removeItem("user");
+        setUser(null); 
+    }catch(err){
+        console.error("Logout failed:", err);
+    }
+    
 }
     return (
         <AuthContext.Provider value={{ user, login, logout }}>

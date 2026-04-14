@@ -1,20 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import IMG from "../assets/back.jpg";
 import img from "../assets/img2.jpeg";
-import axios from "axios";
+import { AuthContext } from "../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import api from "../api/Axios.js";
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
-});
-
-api.interceptors.request.use((config) => {
-  config.withCredentials = true;
-  return config;
-});
 
 const FormPanel = ({
   isSignUp,
@@ -27,7 +20,8 @@ const FormPanel = ({
   toggleForm,
   swapform,
   showPassword,
-  setShowPassword
+  setShowPassword,
+  shake
 }) => (
   <motion.div
     animate={{ x: isMobile ? "0%" : isSignUp ? "100%" : "0%" }}
@@ -38,9 +32,16 @@ const FormPanel = ({
       {isSignUp ? "Create an Account" : "Welcome Back"}
     </h2>
 
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <motion.form onSubmit={handleSubmit} 
+       key={shake}
+       animate={{x:[0,-10, 10, -10, 10, 0],
+             scale:[1, 1.02, 1]
+       }}
+       transition={{duration: 0.5}}
+       className="space-y-4">
+      
       {isSignUp && (
-        <div>
+         <div>
           <input
             type="text"
             name="fullName"
@@ -63,7 +64,9 @@ const FormPanel = ({
         />
       </div>
 
-      <div className="relative">
+       <div
+         className="relative"
+         >
         <input
           type={showPassword ? "text" : "password"}
           name="password"
@@ -73,10 +76,10 @@ const FormPanel = ({
           minLength="6"
           className={` w-full border-b border-gray-300  px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.password || error?.general ? "border-red-500" : ""}`}
         />
-        <span 
-         onClick={() => setShowPassword(!showPassword)}
-         className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer active:scale-105 transition-all duration-300 text-gray-600"
-         >
+        <span
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer active:scale-105 transition-all duration-300 text-gray-600"
+        >
           {showPassword ? <FaEyeSlash /> : <FaEye />}
         </span>
       </div>
@@ -88,7 +91,7 @@ const FormPanel = ({
       >
         {isSignUp ? "Sign Up" : "Sign In"}
       </button>
-    </form>
+    </motion.form>
 
     <p className="text-center text-gray-600 mt-4">
       {isSignUp ? "Already have an account?" : "Don’t have an account?"}{" "}
@@ -106,7 +109,9 @@ const FormPanel = ({
       <p className="text-center text-red-500 mt-2 text-sm">{error.password}</p>
     )}
     {error.general && (
-      <p className="text-center text-red-500 mt-2 text-sm">Invalid credentials</p>
+      <p className="text-center text-red-500 mt-2 text-sm">
+        Invalid credentials
+      </p>
     )}
   </motion.div>
 );
@@ -122,6 +127,9 @@ const Signup = () => {
   const [error, setError] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [shake, setShake] = useState(0);
+
+  const { login } = useContext(AuthContext);
 
   const toggleForm = () => setIsSignUp(!isSignUp);
 
@@ -157,6 +165,7 @@ const Signup = () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setError(validationErrors);
+      setShake((prev)=> prev+1);
       return;
     }
     setLoading(true);
@@ -165,13 +174,14 @@ const Signup = () => {
         // Call signup API here
         const res = await api.post("/users/register", formData);
         setLoading(false);
-        
+
         toast.success("Registration successful! Please sign in.");
         toggleForm();
       } else {
         // Call signin API here
         const res = await api.post("/users/login", formData);
         setLoading(false);
+        login(res.data);
         toast.success("Login successful!");
         navigate("/");
       }
@@ -184,6 +194,7 @@ const Signup = () => {
         ...prev,
         general: message,
       }));
+      setShake((prev)=> prev+1);
       toast.error("Something went wrong. Please try again.");
     }
   };
@@ -219,6 +230,7 @@ const Signup = () => {
             swapform={swapform}
             showPassword={showPassword}
             setShowPassword={setShowPassword}
+            shake={shake}
           />
           <motion.div
             transition={swapform}

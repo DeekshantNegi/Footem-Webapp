@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search } from "lucide-react";
+import { Menu, X, Search, LogOut } from "lucide-react";
+import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const { user, logout } = useContext(AuthContext);
+  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   return (
     <div className="relative ">
-      <nav className={` w-full h-[4em] lg:h-[5.5em] z-50 ${location.pathname === "/" ? "absolute top-0 left-0 " : "bg-[#0a0a0a]   top-0 left-0 shadow-2xl"}`}>
+      <nav
+        className={` w-full h-[4em] lg:h-[5.5em] z-50 ${location.pathname === "/" ? "absolute top-0 left-0 " : "bg-[#0a0a0a]   top-0 left-0 shadow-2xl"}`}
+      >
         <div className="flex justify-between ">
           <div>
             <h1
@@ -18,7 +23,7 @@ const Navbar = () => {
             </h1>
           </div>
 
-          <div className="flex w-full justify-end  md:px-[2vmax] py-[1vmax] gap-[2vw]  mx-[2vw] my-1">
+          <div className="flex w-full justify-end  md:px-[1.5vmax] py-[1vmax] gap-[0.5vw]  mx-[1.5vw] my-1">
             <div className="bg-gradient-to-r from-[#ffffff] to-[#D4DFED] flex rounded-full justify-end md:w-1/2 gap-[0.5rem] items-center p-[0.1em] shadow-2xl">
               <form className="hidden md:block w-full rounded-full focus:ring-0 ">
                 <input
@@ -34,7 +39,7 @@ const Navbar = () => {
 
             <ul className="hidden sm:flex justify-content items-center text-white text-[2.5vmax]  lg:text-[1.5em]  rounded-full px-[1vmax] space-x-[4vw] lg:space-x-[0.5vmax]">
               <li
-                className={`hover:bg-black/10 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716]
+                className={`hover:bg-black/10 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716] active:scale-95
               ${
                 location.pathname === "/" ? "text-[#b4e716] bg-black/20 " : ""
               }`}
@@ -42,7 +47,7 @@ const Navbar = () => {
                 <Link to="/">Home</Link>
               </li>
               <li
-                className={`hover:bg-black/5 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716]
+                className={`hover:bg-black/5 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716] active:scale-95
               ${
                 location.pathname === "/mybookings"
                   ? "text-[#b4e716] bg-black/20"
@@ -52,7 +57,7 @@ const Navbar = () => {
                 <Link to="/mybookings">MyBookings</Link>
               </li>
               <li
-                className={`hover:bg-black/5 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716]
+                className={`hover:bg-black/5 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716] active:scale-95
               ${
                 location.pathname === "/Turfs"
                   ? "text-[#b4e716] bg-black/20"
@@ -83,11 +88,48 @@ const Navbar = () => {
               </div>
             </ul>
 
-            <div className={`flex items-center border-1 text-[0.8em] lg:text-[1vmax] font-semibold text-white hover:text-[#b4e716] px-4 py-1 rounded-full cursor-pointer `}>
-              <Link className="" to="/signup">
-                SignUp
-              </Link>
-            </div>
+           {!user ? (
+              <div
+                className={`flex items-center border-1 text-[0.8em] lg:text-[1vmax] font-semibold text-white hover:text-[#b4e716] px-4 py-1 rounded-full cursor-pointer active:scale-95 transition-all duration-300`}
+              >
+                <Link className="" to="/signup">
+                  SignUp
+                </Link>
+              </div>
+            ) : (
+              <div className="relative rounded-full border-3 border-green-600 hover:border-green-500 bg-white hover:bg-gray-100 hover:shadow-lg active:scale-95 transition-all duration-300">
+                <div
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="cursor-pointer  hover:scale-105 transition-all duration-300"
+                >
+                  {user.avatar?.url ? (
+                    <img
+                      src={user.avatar.url}
+                      alt="avatar"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full font-semibold border-2 border-white flex items-center justify-center">
+                      {user.email.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                
+                {menuOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-2 z-20">
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-2 hover:bg-gray-100 text-md cursor-pointer hover:scale-105 hover:shadow transition-all duration-300 "
+                    >
+                      Logout <LogOut strokeWidth={2.3} className="inline ml-2 text-red-500 font-bold " />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             <button
               className=" sm:hidden text-white z-50 "
               onClick={() => setOpen(!open)}
