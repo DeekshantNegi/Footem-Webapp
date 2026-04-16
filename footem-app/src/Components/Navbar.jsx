@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Search, LogOut } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
@@ -8,6 +8,19 @@ const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+
+  const menuRef= useRef();
+
+  useEffect(()=>{
+    const handler = (e)=>{
+      if(!menuRef.current?.contains(e.target)){
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return ()=>{ document.removeEventListener("mousedown", handler) };
+  },[]);
+  
   return (
     <div className="relative ">
       <nav
@@ -116,13 +129,15 @@ const Navbar = () => {
                 </div>
                 
                 {menuOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-2 z-20">
+                  <div 
+                    ref={menuRef}
+                    className="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-inner p-0.5 z-5">
                     <button
                       onClick={() => {
                         logout();
                         setMenuOpen(false);
                       }}
-                      className="w-full px-4 py-2 hover:bg-gray-100 text-md cursor-pointer hover:scale-105 hover:shadow transition-all duration-300 "
+                      className="w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer  hover:shadow transition-all duration-300 "
                     >
                       Logout <LogOut strokeWidth={2.3} className="inline ml-2 text-red-500 font-bold " />
                     </button>
