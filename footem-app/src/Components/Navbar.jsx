@@ -20,7 +20,7 @@ const Navbar = () => {
     document.addEventListener("mousedown", handler);
     return ()=>{ document.removeEventListener("mousedown", handler) };
   },[]);
-  
+
   return (
     <div className="relative ">
       <nav
@@ -110,10 +110,10 @@ const Navbar = () => {
                 </Link>
               </div>
             ) : (
-              <div className="relative rounded-full border-3 border-green-600 hover:border-green-500 bg-white hover:bg-gray-100 hover:shadow-lg active:scale-95 transition-all duration-300">
+              <div className="relative rounded-full border-3 border-green-600 hover:border-green-500 bg-white hover:bg-gray-100 hover:shadow-lg transition-all duration-300">
                 <div
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="cursor-pointer  hover:scale-105 transition-all duration-300"
+                  className="cursor-pointer  hover:scale-105 active:scale-95 transition-all duration-300"
                 >
                   {user.avatar?.url ? (
                     <img
@@ -131,13 +131,16 @@ const Navbar = () => {
                 {menuOpen && (
                   <div 
                     ref={menuRef}
-                    className="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-inner p-0.5 z-5">
+                    className="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-inner p-0.5 text-left z-5">
+                     
+                      <Link to="/profile" className="inline-block w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300">Profile</Link>       
+                  
                     <button
                       onClick={() => {
                         logout();
                         setMenuOpen(false);
                       }}
-                      className="w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer  hover:shadow transition-all duration-300 "
+                      className="w-full px-4 py-2 hover:bg-gray-200 text-md text-left font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300 "
                     >
                       Logout <LogOut strokeWidth={2.3} className="inline ml-2 text-red-500 font-bold " />
                     </button>

@@ -24,7 +24,7 @@ const registerUser = asyncHandler(async (req, res) => {
   /* Validate input fields */
   const { fullName, email, password } = req.body;
 
-  if ([ fullName, email, password ].some((field) => field?.trim() === "")) {
+  if ([fullName, email, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -46,13 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
   return res
     .status(201)
-    .json(
-      new ApiResponse(
-        200,
-        createdUser,
-           "User created successfully",
-      ),
-    );
+    .json(new ApiResponse(200, createdUser, "User created successfully"));
 });
 
 //loginuser
@@ -79,31 +73,41 @@ const loginUser = asyncHandler(async (req, res) => {
     secure: true,
   };
 
-    return res
-      .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
-      .json(
-        new ApiResponse(
-          200,
-          { user: loggedInUser },
-          "User logged in successfully",
-        ),
-      );
-  });
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser },
+        "User logged in successfully",
+      ),
+    );
+});
 
 //logut user
 
 const logoutUser = asyncHandler(async (req, res, next) => {
-  await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      $unset: { refreshToken: 1 },
-    },
-    {
-      new: true,
-    },
-  );
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (refreshToken) {
+    try {
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+      );
+
+      await User.findByIdAndUpdate(
+        decoded._id,
+        {
+          $unset: { refreshToken: 1 },
+        }
+      );
+    } catch (err) {
+      console.error("Error during logout:", err);
+    }
+  }
 
   const options = {
     httpOnly: true,
@@ -171,7 +175,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 //update profile
 
 const updateProfile = asyncHandler(async (req, res) => {
-  // have'nt tested this
+  // TODO: have'nt implemented profile update
 
   return res.json(
     new ApiResponse(200, updatedUser, "Profile updated successfully"),
@@ -186,10 +190,14 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   if (!avatarUrl) {
     throw new ApiError(400, "Avatar file missing");
   }
-  const compressedPath = `./public/temp/compressed-${Date.now()}-${Math.floor(Math.random()*10000)}.jpg`;
+  const compressedPath = `./public/temp/compressed-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
   const compressedImage = await compressImage(avatarUrl, compressedPath);
 
-  const uploadedImage = await uploadOnCloudinary(avatarUrl, compressedImage, "avatars");
+  const uploadedImage = await uploadOnCloudinary(
+    avatarUrl,
+    compressedImage,
+    "avatars",
+  );
   if (!uploadedImage) {
     throw new ApiError(500, "Failed to upload avatar");
   }

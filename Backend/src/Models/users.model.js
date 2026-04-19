@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
        url: String,
       public_id : String,
     },
+    phone: {
+      type: String,
+      unique: true,
+    },
     refreshToken: {
       type: String,
     },

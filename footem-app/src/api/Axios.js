@@ -20,7 +20,7 @@ const processQueue = (error) => {
   failedQueue = [];
 };
 
-api.interceptors.response.use(         // haven'nt tested yet, but should work fine. if not, will fix it later
+api.interceptors.response.use(        // TODO:  haven'nt tested yet, but should work fine. if not, will fix it later
   (res) => res,
   async (error) => {
     const originalRequest = error.config;
@@ -41,6 +41,7 @@ api.interceptors.response.use(         // haven'nt tested yet, but should work f
 
       try {
         await api.post("users/refresh-token", {});
+        
         processQueue(null);
         return api(originalRequest);
       } catch (err) {
