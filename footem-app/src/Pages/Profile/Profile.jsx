@@ -1,32 +1,73 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { Form, useNavigate } from "react-router-dom";
+import api from "../../api/Axios.js";
+import { validateUpdateProfile } from "../../Utils/validatedata.js";
 import DefaultPic from "../../assets/nagi.jpeg";
+import { toast } from "react-toastify";
 
 export default function ProfilePage() {
-  const [openEdit, setOpenEdit]= useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
   const { user } = useContext(AuthContext);
   const [formdata, setFormdata] = useState({
-    fullName:"",
-    email:"",
-    phone:""
+    fullName: user.fullName || "",
+    email: user.email || "",
+    phone: user.phone || "",
   });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
-  const handleChange=(e)=>{
-    setFormdata(prev=>({...prev, [e.target.name]: e.target.value}));
-  }
-  const handlesubmit=(e)=>{
+  const handleChange = (e) => {
+    setFormdata((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+    setTouched((prev) => ({ ...prev, [e.target.name]: true }));
+  };
+  const handlesubmit = async (e) => {
     e.preventDefault();
+
+    const error = validateUpdateProfile(formdata, touched);
+    if (error) {
+      setErrors(error);
+      return;
+    }
+
+    const updatedData = {};
+
+    if (formdata.fullName !== user.fullName) {
+      updatedData.fullName = formdata.fullName;
+    }
+    if (formdata.email !== user.email) {
+      updatedData.email = formdata.email;
+    }
+
+    if (formdata.phone !== user.phone) {
+      updatedData.phone = formdata.phone; // can be ""
+    }
+
+    if (Object.keys(updatedData).length === 0) {
+        toast.info("No changes made to update");
+      return;
+    }
+
     // Handle form submission logic here
-    
-  }
+    try {
+      const res = await api.patch("/users/userprofile", updatedData);
+      toast.success("Profile updated successfully!");
+      setOpenEdit(false);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setErrors({
+        general: err.response?.data?.message || "Failed to update profile",
+      });
+      toast.error(err.response?.data?.message || "Failed to update profile");
+    }
+  };
 
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-5xl mx-auto space-y-6">
-
         {/* 👤 PROFILE CARD */}
         <div className="bg-white rounded-2xl shadow p-6 flex items-center gap-6">
           <img
@@ -36,34 +77,75 @@ export default function ProfilePage() {
           />
 
           <div className="flex-1">
-            <h2 className="text-2xl font-semibold">{user?.fullName || "User Name"}</h2>
+            <h2 className="text-2xl font-semibold">
+              {user?.fullName || "User Name"}
+            </h2>
             <p className="text-gray-500">{user?.email}</p>
             <p className="text-gray-500 text-sm mt-1">
               {user?.phone || "No phone added"}
             </p>
           </div>
 
-          <button onClick={()=>{setOpenEdit(prev=> !prev)}} className="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 active:scale-95 transition">
+          <button
+            onClick={() => {
+              setOpenEdit((prev) => !prev);
+            }}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 active:scale-95 transition"
+          >
             Edit Profile
           </button>
         </div>
 
-        {openEdit && 
+        {openEdit && (
           <div className="bg-white rounded-2xl shadow p-6">
             <h3 className="text-lg font-semibold mb-4">Edit Profile</h3>
-            <p className="text-gray-500">Update your profile information here.</p>
-            <Form onSubmit={handlesubmit}>
-              <input type="text" name="fullName" placeholder="Full Name" value={formdata.fullName} onChange={(e)=>handleChange(e)}/>
-              <input type="email" name="email" placeholder="Email" value={formdata.email} onChange={(e)=>handleChange(e)}/>
-              <input type="phone" name="phone" placeholder="phone no." value={formdata.phone} onChange={(e)=>handleChange(e)}/>
-              <button type="submit">
+            <p className="text-gray-500">
+              Update your profile information here.
+            </p>
+            <form onSubmit={handlesubmit} className="mt-4 space-y-4">
+              <input
+                type="text"
+                name="fullName"
+                placeholder="Full Name"
+                value={formdata.fullName}
+                onChange={(e) => handleChange(e)}
+                className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formdata.email}
+                onChange={(e) => handleChange(e)}
+                className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+              />
+              <input
+                type="tel"
+                name="phone"
+                placeholder="phone no."
+                value={formdata.phone}
+                onChange={(e) => handleChange(e)}
+                className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 active:scale-95 transition cursor-pointer active:scale-95 "
+              >
                 Submit
               </button>
-              
-            
-            </Form>
+
+              {errors.general && (
+                <p className="text-red-500 text-sm mt-2">{errors.general}</p>
+              )}
+              {errors.fullName && (
+                <p className="text-red-500 text-sm mt-2">{errors.fullName}</p>
+              )}
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-2">{errors.email}</p>
+              )}
+            </form>
           </div>
-        }
+        )}
 
         {/* 📊 STATS CARD */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -129,10 +211,7 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
 }
-
- 

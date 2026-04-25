@@ -175,7 +175,48 @@ const getUserProfile = asyncHandler(async (req, res) => {
 //update profile
 
 const updateProfile = asyncHandler(async (req, res) => {
-  // TODO: have'nt implemented profile update
+ 
+  const updates={};
+  const allowedFields=['fullName', 'email', 'phone'];
+
+  Object.keys(req.body).forEach((key)=>{
+    if(allowedFields.includes(key)){
+
+       const value = req.body[key];
+    if(value!== null && value !==undefined){
+       updates[key]= value;
+    }
+    }
+   
+  });
+
+  if ("fullName" in updates && !updates.fullName.trim()) {
+    throw new ApiError(400, "Name cannot be empty");
+  }
+
+  if ("email" in updates && !updates.email.trim()) {
+    throw new ApiError(400, "Email cannot be empty");
+  }
+
+  if ("phone" in updates) {
+    if (updates.phone !== "" && !/^\d{10}$/.test(updates.phone)) {
+      throw new ApiError(400, "Phone number must be 10 digits");
+    }
+  }
+
+  if(Object.keys(updates).length === 0 ){
+    throw new ApiError(400, "No valid fields provided for update");
+  }
+  
+  const updatedUser = await User.findByIdAndUpdate(req.user?._id,
+    {
+      $set: updates
+    },
+    {
+      new: true,
+      runValidators: true
+    }
+  );
 
   return res.json(
     new ApiResponse(200, updatedUser, "Profile updated successfully"),
@@ -214,8 +255,6 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   ).select("-password -refreshToken -__v");
   return res.json(new ApiResponse(200, user, "Avatar updated successfully"));
 });
-
-//
 
 //change password
 

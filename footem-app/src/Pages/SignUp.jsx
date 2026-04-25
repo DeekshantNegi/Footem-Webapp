@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import api from "../api/Axios.js";
+import { validateLogin, validateSignup } from "../Utils/validatedata.js";
 
 
 const FormPanel = ({
@@ -48,7 +49,7 @@ const FormPanel = ({
             placeholder="FullName"
             value={formData.fullName}
             onChange={handleChange}
-            className={`w-full border-b border-gray-300 px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.general ? "border-red-500" : ""}`}
+            className={`w-full border-b border-gray-300 px-2 py-2 focus:outline-none focus:border-indigo-400 ${error?.fullName ? "border-red-500" : ""}`}
           />
         </div>
       )}
@@ -102,6 +103,11 @@ const FormPanel = ({
         {isSignUp ? "Sign In" : "Sign Up"}
       </button>
     </p>
+    {
+      error.fullName && (
+        <p className="text-center text-red-500 mt-2 text-sm">{error.fullName}</p>
+      )
+    }
     {error.email && (
       <p className="text-center text-red-500 mt-2 text-sm">{error.email}</p>
     )}
@@ -124,7 +130,10 @@ const Signup = () => {
     email: "",
     password: "",
   });
-  const [error, setError] = useState([]);
+  const [error, setError] = useState({
+    field: {},
+    general: "",
+  });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [shake, setShake] = useState(0);
@@ -133,27 +142,6 @@ const Signup = () => {
 
   const toggleForm = () => setIsSignUp(!isSignUp);
 
-  const validateForm = () => {
-    const newErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (isSignUp && !formData.fullName) {
-      newErrors.fullName = "Full Name is required";
-    }
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Invalid email format";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password too short";
-    }
-
-    return newErrors;
-  };
-
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError((prev) => ({ ...prev, [e.target.name]: "" }));
@@ -161,13 +149,22 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    let validationErrors = null;
 
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
+    if (isSignUp) {
+      validationErrors = validateSignup(formData);
+    }
+    else{
+      validationErrors = validateLogin(formData);
+    }
+
+    if(validationErrors){
       setError(validationErrors);
-      setShake((prev)=> prev+1);
+      setShake(prev=> prev+1);
       return;
     }
+
     setLoading(true);
     try {
       if (isSignUp) {
@@ -188,8 +185,7 @@ const Signup = () => {
     } catch (err) {
       console.error("Error during authentication:", err);
       setLoading(false);
-      const message =
-        err.response?.data?.message || "An error occurred. Please try again.";
+      const message ="Invalid credentials";
       setError((prev) => ({
         ...prev,
         general: message,

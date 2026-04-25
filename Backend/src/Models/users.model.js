@@ -25,12 +25,18 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
     avatar: {
-       url: String,
-      public_id : String,
+      url: String,
+      public_id: String,
     },
     phone: {
       type: String,
-      unique: true,
+      default: "",
+      validator: {
+        validator: function (v) {
+          return v === "" || /^\d{10}$/.test(v);
+        },
+        message: "Phone number must be 10 digits",
+      },
     },
     refreshToken: {
       type: String,
