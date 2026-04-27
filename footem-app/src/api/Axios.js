@@ -9,49 +9,33 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error) => {
-  failedQueue.forEach((prom) => {
-    if (error) prom.reject(error);
-    else prom.resolve();
-  });
-  failedQueue = [];
-};
-
-api.interceptors.response.use(        // TODO:  haven'nt tested yet, but should work fine. if not, will fix it later
+api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response?.status === 401 &&
-      error.response?.data?.message === "ACCESS_TOKEN_EXPIRED" &&
-      !originalRequest._retry
-    ) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(() => api(originalRequest));
-      }
+    if(originalRequest._retry){
+      return Promise.reject(error);
+    }
 
+    if (error.response?.status === 401) {
       originalRequest._retry = true;
-      isRefreshing = true;
-
+       
       try {
-        await api.post("users/refresh-token", {});
+        const refreshRes = await api.post("/users/refresh-token", {});
         
-        processQueue(null);
         return api(originalRequest);
       } catch (err) {
-        processQueue(err);
-
+        console.error("Token refresh failed:", err.response?.data?.message || err.message);
+        
+        // Clear auth state before redirecting
+        localStorage.removeItem("user");
+        sessionStorage.clear();
+        
+        // Redirect to login
         window.location.href = "/login";
         return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
+      }  
     }
 
     return Promise.reject(error);

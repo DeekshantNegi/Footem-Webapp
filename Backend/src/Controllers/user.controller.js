@@ -70,7 +70,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false, // Set to true in production with HTTPS
   };
 
   return res
@@ -98,12 +98,9 @@ const logoutUser = asyncHandler(async (req, res, next) => {
         process.env.REFRESH_TOKEN_SECRET,
       );
 
-      await User.findByIdAndUpdate(
-        decoded._id,
-        {
-          $unset: { refreshToken: 1 },
-        }
-      );
+      await User.findByIdAndUpdate(decoded._id, {
+        $unset: { refreshToken: 1 },
+      });
     } catch (err) {
       console.error("Error during logout:", err);
     }
@@ -111,7 +108,7 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
   };
   return res
     .status(200)
@@ -128,10 +125,17 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Refresh token is required");
   }
 
-  const decodedToken = jwt.verify(
-    incomingRefreshToken,
-    process.env.REFRESH_TOKEN_SECRET,
-  );
+  let decodedToken;
+
+  try {
+    decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+    );
+  } catch (err) {
+    throw new ApiError(401, "Invalid or expired refresh token");
+  }
+
   const user = await User.findById(decodedToken?._id);
 
   if (!user || user.refreshToken !== incomingRefreshToken) {
@@ -139,20 +143,20 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
   };
-  const { accessToken, newRefreshToken } = await generateAccessAndRefreshTokens(
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id,
   );
 
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", newRefreshToken, options)
+    .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
         200,
-        { accessToken, refreshToken: newRefreshToken },
+        { accessToken, refreshToken },
         "Access token refreshed successfully",
       ),
     );
@@ -175,19 +179,20 @@ const getUserProfile = asyncHandler(async (req, res) => {
 //update profile
 
 const updateProfile = asyncHandler(async (req, res) => {
- 
-  const updates={};
-  const allowedFields=['fullName', 'email', 'phone'];
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized");
+  }
 
-  Object.keys(req.body).forEach((key)=>{
-    if(allowedFields.includes(key)){
+  const updates = {};
+  const allowedFields = ["fullName", "email", "phone"];
 
-       const value = req.body[key];
-    if(value!== null && value !==undefined){
-       updates[key]= value;
+  Object.keys(req.body).forEach((key) => {
+    if (allowedFields.includes(key)) {
+      const value = req.body[key];
+      if (value !== null && value !== undefined) {
+        updates[key] = value;
+      }
     }
-    }
-   
   });
 
   if ("fullName" in updates && !updates.fullName.trim()) {
@@ -204,19 +209,24 @@ const updateProfile = asyncHandler(async (req, res) => {
     }
   }
 
-  if(Object.keys(updates).length === 0 ){
+  if (Object.keys(updates).length === 0) {
     throw new ApiError(400, "No valid fields provided for update");
   }
-  
-  const updatedUser = await User.findByIdAndUpdate(req.user?._id,
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user?._id,
     {
-      $set: updates
+      $set: updates,
     },
     {
       new: true,
-      runValidators: true
-    }
+      runValidators: true,
+    },
   );
+
+  if (!updatedUser) {
+    throw new ApiError(500, "Failed to update profile");
+  }
 
   return res.json(
     new ApiResponse(200, updatedUser, "Profile updated successfully"),

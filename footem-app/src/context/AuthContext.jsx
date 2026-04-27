@@ -33,20 +33,32 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
     } catch (err) {
       console.error("Logout failed:", err);
+      localStorage.removeItem("user");
+      setUser(null);
     }
   };
 
   useEffect(() => {
     const initAuth = async () => {
       try {
-        await api.post("/users/refresh-token", {});
-
         const res = await api.get("/users/userprofile");
-        setUser(res.data.data.user);
-        localStorage.setItem("user", JSON.stringify(res.data.data.user));
+        setUser(res.data.data);
+         
+        localStorage.setItem("user", JSON.stringify(res.data.data ));
+
       } catch (err) {
-        localStorage.removeItem("user");
-        setUser(null);
+        console.error("Profile fetch failed:", err.response?.data?.message || err.message);
+        try{
+             await api.post("/users/refresh-token", {});
+             const res = await api.get("/users/userprofile");
+             setUser(res.data.data);
+             localStorage.setItem("user", JSON.stringify(res.data.data));
+        } catch(refreshErr){
+           console.error("Token refresh during init failed:", refreshErr.response?.data?.message || refreshErr.message);
+           localStorage.removeItem("user");
+           setUser(null);
+        }
+       
       } finally {
         setLoading(false);
       }
@@ -56,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

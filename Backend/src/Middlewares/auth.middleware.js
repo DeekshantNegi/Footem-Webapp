@@ -5,34 +5,30 @@ import { User } from "../Models/users.model.js";
 import { Owner } from "../Models/owners.model.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
-  try {
-    const token =
-      req.cookies?.accessToken ||
-      req.header("Authorization")?.replace("Bearer ", "");
-    if (!token) {
-      throw new ApiError(401, "Unauthorized request");
-    }
-
-    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-    const user = await User.findById(decodedToken?._id).select(
-      "-password -refreshToken",
-    );
-    if (!user) {
-      throw new ApiError(401, "Invalid Access Token");
-    }
-
-    req.user = user;
-    next();
-  } catch (error) {
-    if(error.name === "TokenExpiredError")
-      throw new ApiError(401, "ACCESS_TOKEN_EXPIRED");
-
-    if(error.name === "JsonWebTokenError")
-      throw new ApiError(401, "INVALID_TOKEN");
-
-    throw new ApiError(401, error?.message || "AUTH_FAILED");
+  const token =
+    req.cookies?.accessToken ||
+    req.header("Authorization")?.replace("Bearer ", "");
+  if (!token) {
+    throw new ApiError(401, "Unauthorized request");
   }
+
+  let decodedToken;
+
+  try {
+    decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+  } catch (err) {
+    throw new ApiError(401, "Invalid or expired access token");
+  }
+
+  const user = await User.findById(decodedToken?._id).select(
+    "-password -refreshToken",
+  );
+  if (!user) {
+    throw new ApiError(401, "Invalid Access Token");
+  }
+
+  req.user = user;
+  next();
 });
 
 export const authorizeRoles = (...roles) => {

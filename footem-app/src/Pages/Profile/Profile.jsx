@@ -8,11 +8,11 @@ import { toast } from "react-toastify";
 
 export default function ProfilePage() {
   const [openEdit, setOpenEdit] = useState(false);
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const [formdata, setFormdata] = useState({
-    fullName: user.fullName || "",
-    email: user.email || "",
-    phone: user.phone || "",
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -33,14 +33,14 @@ export default function ProfilePage() {
 
     const updatedData = {};
 
-    if (formdata.fullName !== user.fullName) {
+    if (formdata.fullName !== user?.fullName) {
       updatedData.fullName = formdata.fullName;
     }
-    if (formdata.email !== user.email) {
+    if (formdata.email !== user?.email) {
       updatedData.email = formdata.email;
     }
 
-    if (formdata.phone !== user.phone) {
+    if (formdata.phone !== user?.phone) {
       updatedData.phone = formdata.phone; // can be ""
     }
 
@@ -53,9 +53,9 @@ export default function ProfilePage() {
     try {
       const res = await api.patch("/users/userprofile", updatedData);
       toast.success("Profile updated successfully!");
+      setUser(res.data.data);
       setOpenEdit(false);
     } catch (err) {
-      console.error("Error updating profile:", err);
       setErrors({
         general: err.response?.data?.message || "Failed to update profile",
       });
@@ -142,6 +142,9 @@ export default function ProfilePage() {
               )}
               {errors.email && (
                 <p className="text-red-500 text-sm mt-2">{errors.email}</p>
+              )}
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-2">{errors.phone}</p> 
               )}
             </form>
           </div>
