@@ -136,8 +136,8 @@ const Navbar = () => {
                       <Link to="/profile" className="inline-block w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300">Profile</Link>       
                   
                     <button
-                      onClick={() => {
-                        logout();
+                      onClick={async () => {
+                        await logout();
                         setMenuOpen(false);
                       }}
                       className="w-full px-4 py-2 hover:bg-gray-200 text-md text-left font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300 "

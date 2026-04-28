@@ -43,22 +43,11 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await api.get("/users/userprofile");
         setUser(res.data.data);
-         
-        localStorage.setItem("user", JSON.stringify(res.data.data ));
-
+        localStorage.setItem("user", JSON.stringify(res.data.data));
       } catch (err) {
-        console.error("Profile fetch failed:", err.response?.data?.message || err.message);
-        try{
-             await api.post("/users/refresh-token", {});
-             const res = await api.get("/users/userprofile");
-             setUser(res.data.data);
-             localStorage.setItem("user", JSON.stringify(res.data.data));
-        } catch(refreshErr){
-           console.error("Token refresh during init failed:", refreshErr.response?.data?.message || refreshErr.message);
-           localStorage.removeItem("user");
-           setUser(null);
-        }
-       
+        console.error("Failed to fetch user profile:", err.response?.data?.message || err.message);
+        localStorage.removeItem("user");
+        setUser(null);
       } finally {
         setLoading(false);
       }

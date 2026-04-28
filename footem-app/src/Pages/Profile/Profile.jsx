@@ -5,6 +5,8 @@ import api from "../../api/Axios.js";
 import { validateUpdateProfile } from "../../Utils/validatedata.js";
 import DefaultPic from "../../assets/nagi.jpeg";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import ProfileImage from "./ProfileImage.jsx";
 
 export default function ProfilePage() {
   const [openEdit, setOpenEdit] = useState(false);
@@ -45,7 +47,7 @@ export default function ProfilePage() {
     }
 
     if (Object.keys(updatedData).length === 0) {
-        toast.info("No changes made to update");
+      toast.info("No changes made to update");
       return;
     }
 
@@ -57,9 +59,20 @@ export default function ProfilePage() {
       setOpenEdit(false);
     } catch (err) {
       setErrors({
-        general: err.response?.data?.message || "Failed to update profile",
+        general: "Failed to update profile",
       });
-      toast.error(err.response?.data?.message || "Failed to update profile");
+      toast.error( "Failed to update profile");
+    }
+  };
+
+  const handleAvatarChange = async (file) => {
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await api.patch("/users/avatar", formData);
+    } catch (err) {
+      toast.error("Failed to update avatar");
     }
   };
 
@@ -70,10 +83,9 @@ export default function ProfilePage() {
       <div className="max-w-5xl mx-auto space-y-6">
         {/* 👤 PROFILE CARD */}
         <div className="bg-white rounded-2xl shadow p-6 flex items-center gap-6">
-          <img
-            src={user?.avatar?.url || DefaultPic}
-            alt="avatar"
-            className="w-30 h-30 rounded-full object-cover border"
+          <ProfileImage
+            image={user?.avatar?.url || DefaultPic}
+            onImageChange={handleAvatarChange}
           />
 
           <div className="flex-1">
@@ -97,7 +109,10 @@ export default function ProfilePage() {
         </div>
 
         {openEdit && (
-          <div className="bg-white rounded-2xl shadow p-6">
+          <motion.div
+            transition={{ duration: 0.4 }}
+            className="bg-white rounded-2xl shadow p-6"
+          >
             <h3 className="text-lg font-semibold mb-4">Edit Profile</h3>
             <p className="text-gray-500">
               Update your profile information here.
@@ -144,10 +159,10 @@ export default function ProfilePage() {
                 <p className="text-red-500 text-sm mt-2">{errors.email}</p>
               )}
               {errors.phone && (
-                <p className="text-red-500 text-sm mt-2">{errors.phone}</p> 
+                <p className="text-red-500 text-sm mt-2">{errors.phone}</p>
               )}
             </form>
-          </div>
+          </motion.div>
         )}
 
         {/* 📊 STATS CARD */}
