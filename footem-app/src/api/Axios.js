@@ -14,7 +14,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if(originalRequest._retry){
+    if(originalRequest._retry || originalRequest.url.includes("/users/refresh-token")){
       return Promise.reject(error);
     }
 
@@ -30,10 +30,7 @@ api.interceptors.response.use(
         
         // Clear auth state before redirecting
         localStorage.removeItem("user");
-        sessionStorage.clear();
         
-        // Redirect to login
-        window.location.href = "/login";
         return Promise.reject(err);
       }  
     }

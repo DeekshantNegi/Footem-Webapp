@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -7,25 +6,22 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localfilePath, compressedImagePath, folder) => {
+const uploadOnCloudinary = async (compressedImagePath, folder) => {
   try {
-    if (!compressedImagePath && !localfilePath) {
+    if (!compressedImagePath) {
       return null;
     }
     const response = await cloudinary.uploader.upload(compressedImagePath, {
       folder,
       resource_type: "auto",
     });
-    fs.unlinkSync(compressedImagePath);
-    fs.unlinkSync(localfilePath);
+    
     
     return {
       url: response.secure_url,
       public_id: response.public_id,
     };
   } catch (error) {
-    fs.unlinkSync(localfilePath);
-    fs.unlinkSync(compressedImagePath);
     console.error("Cloudinary upload error:", error);
     return null;
   }

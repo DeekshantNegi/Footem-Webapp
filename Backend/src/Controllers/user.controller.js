@@ -5,7 +5,7 @@ import { User } from "../Models/users.model.js";
 import jwt from "jsonwebtoken";
 import { uploadOnCloudinary } from "../Utils/Cloudinary.js";
 import { compressImage } from "../Utils/compressimage.js";
-
+import fs from "fs";
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -68,15 +68,18 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken -__v",
   );
 
-  const options = {
-    httpOnly: true,
-    secure: false, // Set to true in production with HTTPS
-  };
-
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    })
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    })
     .json(
       new ApiResponse(
         200,
@@ -234,36 +237,52 @@ const updateProfile = asyncHandler(async (req, res) => {
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-  if (!req.file) {
+  if (!req.file || !req.file.path) {
     throw new ApiError(400, "No image uploaded");
   }
   const avatarUrl = req.file?.path.replace(/\\/g, "/");
   if (!avatarUrl) {
     throw new ApiError(400, "Avatar file missing");
   }
-  const compressedPath = `./public/temp/compressed-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
-  const compressedImage = await compressImage(avatarUrl, compressedPath);
 
-  const uploadedImage = await uploadOnCloudinary(
-    avatarUrl,
-    compressedImage,
-    "avatars",
-  );
-  if (!uploadedImage) {
-    throw new ApiError(500, "Failed to upload avatar");
-  }
+  let compressedImage;
 
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      avatar: {
-        url: uploadedImage.url,
-        public_id: uploadedImage.public_id,
+  try {
+    const compressedPath = `./public/temp/compressed-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
+    compressedImage = await compressImage(avatarUrl, compressedPath);
+
+    const uploadedImage = await uploadOnCloudinary(compressedImage, "avatars");
+    if (!uploadedImage) {
+      throw new ApiError(500, "Failed to upload avatar");
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        avatar: {
+          url: uploadedImage.url,
+          public_id: uploadedImage.public_id,
+        },
       },
-    },
-    { new: true },
-  ).select("-password -refreshToken -__v");
-  return res.json(new ApiResponse(200, user, "Avatar updated successfully"));
+      { new: true },
+    ).select("-password -refreshToken -__v");
+
+    return res.json(new ApiResponse(200, user, "Avatar updated successfully"));
+  } catch (error) {
+    throw new ApiError(500, "Failed to update avatar");
+  } finally {
+    try {
+      if (avatarUrl && fs.existsSync(avatarUrl)) {
+        fs.unlinkSync(avatarUrl);
+      }
+
+      if (compressedImage && fs.existsSync(compressedImage)) {
+        fs.unlinkSync(compressedImage);
+      }
+    } catch (cleanupErr) {
+      console.error("Cleanup error:", cleanupErr);
+    }
+  }
 });
 
 //change password

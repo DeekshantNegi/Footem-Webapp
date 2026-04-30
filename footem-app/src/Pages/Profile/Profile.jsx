@@ -7,6 +7,7 @@ import DefaultPic from "../../assets/nagi.jpeg";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import ProfileImage from "./ProfileImage.jsx";
+import Spinner from "../../Components/Spinner.jsx";
 
 export default function ProfilePage() {
   const [openEdit, setOpenEdit] = useState(false);
@@ -18,6 +19,7 @@ export default function ProfilePage() {
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormdata((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -53,6 +55,7 @@ export default function ProfilePage() {
 
     // Handle form submission logic here
     try {
+      setLoading(true);
       const res = await api.patch("/users/userprofile", updatedData);
       toast.success("Profile updated successfully!");
       setUser(res.data.data);
@@ -61,19 +64,37 @@ export default function ProfilePage() {
       setErrors({
         general: "Failed to update profile",
       });
-      toast.error( "Failed to update profile");
+      toast.error("Failed to update profile");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAvatarChange = async (file) => {
+
+    const oldUserAvatar= user;
+
+    const previewUrl = URL.createObjectURL(file);
+    setUser((prev) => ({
+      ...prev,
+      avatar: { ...prev.avatar, url: previewUrl },
+    }));
+
     const formData = new FormData();
     formData.append("avatar", file);
 
     try {
       const res = await api.patch("/users/avatar", formData);
+      setUser(res.data.data);
+      localStorage.setItem("user", JSON.stringify(res.data.data));
     } catch (err) {
       toast.error("Failed to update avatar");
+      setUser(oldUserAvatar);
     }
+    finally {
+    // Clean up memory
+    URL.revokeObjectURL(previewUrl);
+  }
   };
 
   const navigate = useNavigate();
@@ -144,9 +165,11 @@ export default function ProfilePage() {
               />
               <button
                 type="submit"
+                disabled={loading}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 active:scale-95 transition cursor-pointer active:scale-95 "
               >
-                Submit
+                {loading && <Spinner size={18} />}
+                {loading ? "Updating...":"Submit"}
               </button>
 
               {errors.general && (
