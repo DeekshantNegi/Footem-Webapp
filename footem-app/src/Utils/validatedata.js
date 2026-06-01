@@ -50,4 +50,4 @@ const validateUpdateProfile = (data, touched) => {
     return Object.keys(errors).length === 0 ? null : errors;
 };
 
-export { validateSignup, validateLogin, validateUpdateProfile };
+export { validateSignup, validateLogin, validateUpdateProfile, validatePassword };

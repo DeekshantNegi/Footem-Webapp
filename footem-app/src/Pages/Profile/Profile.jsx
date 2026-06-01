@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext.jsx";
 import { Form, useNavigate } from "react-router-dom";
 import api from "../../api/Axios.js";
 import { validateUpdateProfile } from "../../Utils/validatedata.js";
@@ -7,16 +7,18 @@ import DefaultPic from "../../assets/nagi.jpeg";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import ProfileImage from "./ProfileImage.jsx";
+import ResetPassword from "./ResetPassword.jsx";
 import Spinner from "../../Components/Spinner.jsx";
 
 export default function ProfilePage() {
   const [openEdit, setOpenEdit] = useState(false);
-  const { user, setUser } = useContext(AuthContext);
+  const { user, setUser, logout } = useContext(AuthContext);
   const [formdata, setFormdata] = useState({
     fullName: user?.fullName || "",
     email: user?.email || "",
     phone: user?.phone || "",
   });
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
@@ -71,8 +73,7 @@ export default function ProfilePage() {
   };
 
   const handleAvatarChange = async (file) => {
-
-    const oldUserAvatar= user;
+    const oldUserAvatar = user;
 
     const previewUrl = URL.createObjectURL(file);
     setUser((prev) => ({
@@ -87,14 +88,18 @@ export default function ProfilePage() {
       const res = await api.patch("/users/avatar", formData);
       setUser(res.data.data);
       localStorage.setItem("user", JSON.stringify(res.data.data));
+      toast.success("Avatar updated successfully!");
     } catch (err) {
       toast.error("Failed to update avatar");
       setUser(oldUserAvatar);
+    } finally {
+      // Clean up memory
+      URL.revokeObjectURL(previewUrl);
     }
-    finally {
-    // Clean up memory
-    URL.revokeObjectURL(previewUrl);
-  }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
   };
 
   const navigate = useNavigate();
@@ -169,7 +174,7 @@ export default function ProfilePage() {
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 active:scale-95 transition cursor-pointer active:scale-95 "
               >
                 {loading && <Spinner size={18} />}
-                {loading ? "Updating...":"Submit"}
+                {loading ? "Updating..." : "Submit"}
               </button>
 
               {errors.general && (
@@ -188,7 +193,7 @@ export default function ProfilePage() {
           </motion.div>
         )}
 
-        {/* 📊 STATS CARD */}
+        {/* 📊 STATS CARD  - TODO:make dynamic */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl shadow p-4 text-center">
             <p className="text-gray-500 text-sm">Total Bookings</p>
@@ -213,21 +218,21 @@ export default function ProfilePage() {
           <div className="flex flex-wrap gap-4">
             <button
               onClick={() => navigate("/my-bookings")}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition"
             >
               View My Bookings
             </button>
 
             <button
-              onClick={() => navigate("/")}
-              className="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition"
+              onClick={() => navigate("/turfs")}
+              className="px-4 py-2 border border-green-600 text-green-600 rounded-lg cursor-pointer hover:bg-green-50 transition"
             >
               Explore Turfs
             </button>
           </div>
         </div>
 
-        {/* 🕒 RECENT ACTIVITY */}
+        {/* 🕒 RECENT ACTIVITY -- TODO: make dynamic */}
         <div className="bg-white rounded-2xl shadow p-6">
           <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
 
@@ -239,19 +244,32 @@ export default function ProfilePage() {
         </div>
 
         {/* ⚙️ SETTINGS */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Settings</h3>
+        <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+          <h3 className="text-lg font-semibold ">Settings</h3>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+            <button
+              className="px-4 py-2 border rounded-lg cursor-pointer hover:bg-gray-100 active:scale-95 transition"
+              onClick={() => setChangePasswordOpen((prev) => !prev)}
+            >
               Change Password
             </button>
 
-            <button className="px-4 py-2 text-red-500 border border-red-500 rounded-lg hover:bg-red-50 transition">
+            <button
+              className="px-4 py-2 text-red-500 border border-red-500 rounded-lg cursor-pointer hover:bg-red-50 active:scale-95 transition"
+              onClick={async () => {
+                await logout();
+                navigate("/");
+              }}
+            >
               Logout
             </button>
           </div>
+        
         </div>
+          {changePasswordOpen && (
+           <ResetPassword/>
+          )}
       </div>
     </div>
   );

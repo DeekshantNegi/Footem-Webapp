@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import api from "../api/Axios.js";
 import { validateLogin, validateSignup } from "../Utils/validatedata.js";
+import Spinner from "../Components/Spinner.jsx";
 
 
 const FormPanel = ({
@@ -88,9 +89,8 @@ const FormPanel = ({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold cursor-pointer active:scale-95 transition-all duration-300"
-      >
-        {isSignUp ? "Sign Up" : "Sign In"}
+        className="w-full bg-indigo-600 flex items-center justify-center hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold cursor-pointer active:scale-95 transition-all duration-300"
+      > {loading ? <Spinner size={18}/> : isSignUp ? "Sign Up" : "Sign In"}
       </button>
     </motion.form>
 
@@ -170,21 +170,19 @@ const Signup = () => {
       if (isSignUp) {
         // Call signup API here
         const res = await api.post("/users/register", formData);
-        setLoading(false);
 
         toast.success("Registration successful! Please sign in.");
         toggleForm();
+
       } else {
         // Call signin API here
         const res = await api.post("/users/login", formData);
-        setLoading(false);
         login(res.data);
         toast.success("Login successful!");
         navigate("/");
       }
     } catch (err) {
       console.error("Error during authentication:", err);
-      setLoading(false);
       const message ="Invalid credentials";
       setError((prev) => ({
         ...prev,
@@ -192,6 +190,8 @@ const Signup = () => {
       }));
       setShake((prev)=> prev+1);
       toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
