@@ -285,7 +285,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 });
 
-//change password
+//change password 
 
 const changeUserPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
