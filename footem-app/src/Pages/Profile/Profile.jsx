@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext.jsx";
+import { OwnerContext } from "../../context/OwnerContext.jsx";
 import { Form, useNavigate } from "react-router-dom";
 import api from "../../api/Axios.js";
 import { validateUpdateProfile } from "../../Utils/validatedata.js";
@@ -13,6 +14,7 @@ import Spinner from "../../Components/Spinner.jsx";
 export default function ProfilePage() {
   const [openEdit, setOpenEdit] = useState(false);
   const { user, setUser, logout } = useContext(AuthContext);
+  const { ownerProfile } = useContext(OwnerContext);
   const [formdata, setFormdata] = useState({
     fullName: user?.fullName || "",
     email: user?.email || "",
@@ -128,9 +130,9 @@ export default function ProfilePage() {
             onClick={() => {
               setOpenEdit((prev) => !prev);
             }}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 active:scale-95 transition"
+            className="px-4 py-2 w-20 bg-green-600 text-white rounded-lg shadow-lg cursor-pointer hover:bg-green-700 active:scale-95 transition"
           >
-            Edit Profile
+            Edit
           </button>
         </div>
 
@@ -143,35 +145,44 @@ export default function ProfilePage() {
             <p className="text-gray-500">
               Update your profile information here.
             </p>
-            <form onSubmit={handlesubmit} className="mt-4 space-y-4">
-              <input
+            <form onSubmit={handlesubmit} className="mt-4 space-y-4 text-sm">
+              <div className="flex gap-2">
+                <p className="w-18 flex justify-content items-center">FullName</p>
+               <input
                 type="text"
                 name="fullName"
                 placeholder="Full Name"
                 value={formdata.fullName}
                 onChange={(e) => handleChange(e)}
-                className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                className={` bg-gray-50  text-gray-500 w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:text-black ${errors.fullName? "ring-red-500": ""}`}
               />
+              </div>
+              <div className="flex gap-2">
+                <p className="w-18 flex justify-content items-center">Email</p>
               <input
                 type="email"
                 name="email"
                 placeholder="Email"
                 value={formdata.email}
                 onChange={(e) => handleChange(e)}
-                className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                className={` bg-gray-50 text-gray-500 w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:text-black ${errors.email? "ring-red-500": ""}`}
               />
+              </div>
+              <div className="flex gap-2">
+                <p className="w-18 flex justify-content items-center">Phone</p>
               <input
                 type="tel"
                 name="phone"
                 placeholder="phone no."
                 value={formdata.phone}
                 onChange={(e) => handleChange(e)}
-                className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                className={` bg-gray-50  text-gray-500 w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:text-black ${errors.phone ? "ring-red-500" : ""}`}
               />
+              </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 active:scale-95 transition cursor-pointer active:scale-95 "
+                className="px-4 py-2 w-full bg-green-600 text-white rounded-lg hover:bg-green-700 active:scale-95 transition cursor-pointer active:scale-95 "
               >
                 {loading && <Spinner size={18} />}
                 {loading ? "Updating..." : "Submit"}
@@ -217,7 +228,7 @@ export default function ProfilePage() {
 
           <div className="flex flex-wrap gap-4">
             <button
-              onClick={() => navigate("/my-bookings")}
+              onClick={() => navigate("/mybookings")}
               className="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition"
             >
               View My Bookings
@@ -229,6 +240,15 @@ export default function ProfilePage() {
             >
               Explore Turfs
             </button>
+
+            {!ownerProfile && (
+              <button
+                onClick={() => navigate("/apply-owner")}
+                className="px-4 py-2 border border-yellow-600 text-yellow-600 rounded-lg cursor-pointer hover:bg-yellow-50 transition"
+              >
+                Apply For Owner
+              </button>
+            )}
           </div>
         </div>
 
