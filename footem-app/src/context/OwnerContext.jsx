@@ -6,7 +6,6 @@ export const OwnerContext = createContext();
 
 export const OwnerProvider = ({ children }) => {
   const [ownerProfile, setOwnerProfile] = useState(null);
-  const [ownerApplication, setOwnerApplication] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { user } = useContext(AuthContext);
@@ -18,20 +17,14 @@ export const OwnerProvider = ({ children }) => {
       setError(null);
       const res = await api.get("/owners/me");
       const data = res.data.data;
-      // Keep verified owner in `ownerProfile`, keep pending/rejected application in `ownerApplication`
-      if (data?.status === "verified") {
-        setOwnerProfile(data);
-        setOwnerApplication(null);
-      } else {
-        setOwnerApplication(data);
-        setOwnerProfile(null);
-      }
+      setOwnerProfile(data);
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || err.message || "Failed to fetch owner profile";
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to fetch owner profile";
       setError(errorMessage);
       setOwnerProfile(null);
-      setOwnerApplication(null);
     } finally {
       setLoading(false);
     }
@@ -44,18 +37,14 @@ export const OwnerProvider = ({ children }) => {
       setError(null);
       const res = await api.post("/owners/apply", formData);
       const data = res.data.data;
-      // Application should not be treated as a verified owner until admin approves
-      if (data?.status === "verified") {
-        setOwnerProfile(data);
-        setOwnerApplication(null);
-      } else {
-        setOwnerApplication(data);
-        setOwnerProfile(null);
-      }
+
+      setOwnerProfile(data);
       return data;
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || err.message || "Failed to apply for owner";
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to apply for owner";
       setError(errorMessage);
       throw err;
     } finally {
@@ -76,13 +65,12 @@ export const OwnerProvider = ({ children }) => {
     <OwnerContext.Provider
       value={{
         ownerProfile,
-        ownerApplication,
         loading,
         error,
         applyForOwner,
         fetchOwnerProfile,
         setOwnerProfile,
-        setOwnerApplication,
+        
       }}
     >
       {children}

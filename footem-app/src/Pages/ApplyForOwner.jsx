@@ -10,7 +10,7 @@ import { FileCheck, Phone, MapPin } from "lucide-react";
 const ApplyForOwner = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const { ownerProfile, ownerApplication, applyForOwner, loading } = useContext(OwnerContext);
+  const { ownerProfile,  loading } = useContext(OwnerContext);
 
   const [formData, setFormData] = useState({
     turfName: "",
@@ -31,11 +31,11 @@ const ApplyForOwner = () => {
       return;
     }
 
-    if (ownerApplication || ownerProfile) {
+    if (ownerProfile) {
       toast.info("You have already applied for owner status");
       navigate("/owner-profile");
     }
-  }, [user, ownerProfile, ownerApplication, navigate]);
+  }, [user, ownerProfile, navigate]);
 
   const validateForm = () => {
     const newErrors = {};

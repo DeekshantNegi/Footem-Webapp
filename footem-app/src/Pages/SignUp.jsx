@@ -130,10 +130,7 @@ const Signup = () => {
     email: "",
     password: "",
   });
-  const [error, setError] = useState({
-    field: {},
-    general: "",
-  });
+  const [error, setError] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [shake, setShake] = useState(0);

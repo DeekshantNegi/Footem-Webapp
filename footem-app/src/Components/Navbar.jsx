@@ -2,10 +2,12 @@ import { useState, useContext, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Search, LogOut } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
+import { OwnerContext } from "../context/OwnerContext.jsx";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { user, logout } = useContext(AuthContext);
+  const { ownerProfile } = useContext(OwnerContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -79,6 +81,18 @@ const Navbar = () => {
               >
                 <Link to="/Turfs">Turfs</Link>
               </li>
+              { ownerProfile?.status === "verified" && (
+                <li
+                  className={`hover:bg-black/5 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716] active:scale-95
+                ${
+                  location.pathname === "/owner-dashboard"
+                    ? "text-[#b4e716] bg-black/20"
+                    : ""
+                }`}
+                >
+                  <Link to="/owner-dashboard">Owner Dashboard</Link>
+                </li>
+              )}
             </ul>
 
             <ul
@@ -98,6 +112,11 @@ const Navbar = () => {
                 <li className=" rounded-lg mt-[0.5rem] py-2 active:text-[#b4e716]">
                   <Link to="/Turfs">Turfs</Link>
                 </li>
+                {ownerProfile?.status === "verified" && (
+                  <li className=" rounded-lg mt-[0.5rem] py-2 active:text-[#b4e716]">
+                    <Link to="/owner-dashboard">Owner Dashboard</Link>
+                  </li>
+                )}
               </div>
             </ul>
 
@@ -133,8 +152,10 @@ const Navbar = () => {
                     ref={menuRef}
                     className="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-inner p-0.5 text-left z-5">
                      
-                      <Link to="/profile" className="inline-block w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300">Profile</Link>       
-                  
+                      <Link to="/profile" className="inline-block w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300">Profile</Link>
+                      {ownerProfile && (
+                        <Link to={ownerProfile?.status === "verified" ? "/owner-dashboard" : "/owner-profile"} className="inline-block w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300">Owner</Link>
+                      )}      
                     <button
                       onClick={async () => {
                         await logout();
