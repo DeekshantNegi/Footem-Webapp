@@ -1,20 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
-import footballImage from "../assets/signup-football.png";
 
-// Uncomment if you already have these
-// import api from "../api/Axios";
-// import { validateSignup } from "../Utils/validatedata";
+import footballImage from "../assets/login-football.png";
+import api from "../api/Axios";
+import { validateLogin } from "../Utils/validatedata";
+import { AuthContext } from "../context/AuthContext";
 
-const Signup = ({ setAuthMode } ) => {
+const Login = ({ setAuthMode } ) => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
-    fullName: "",
     email: "",
     password: "",
   });
@@ -31,51 +31,50 @@ const Signup = ({ setAuthMode } ) => {
     setError((prev) => ({
       ...prev,
       [e.target.name]: "",
+      general: "",
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setError({});
+    const validationErrors = validateLogin(formData);
 
-    // If using your validation function
-    // const validationErrors = validateSignup(formData);
-    // if (validationErrors) {
-    //   setError(validationErrors);
-    //   return;
-    // }
+    if (validationErrors) {
+      setError(validationErrors);
+      return;
+    }
 
     setLoading(true);
 
     try {
-      // Replace with your actual API call
-      // await api.post("/users/register", formData);
+      const res = await api.post("/users/login", formData);
 
-      console.log("Registering user:", formData);
+      login(res.data);
 
-      toast.success("Registration successful!");
+      toast.success("Login successful!");
 
-      navigate("/login");
+      navigate("/");
     } catch (err) {
-      console.error(err);
+      console.error("Login Error:", err);
 
       setError({
-        general: "Registration failed",
+        general: "Invalid credentials",
       });
 
-      toast.error("Registration failed");
+      toast.error("Invalid credentials");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    //<div className="w-full bg-white dark:bg-[#121212] flex items-center justify-center px-4 py-8">
+    
       <div className="w-full max-w-6xl bg-white dark:bg-[#1A1A1A] rounded-[40px] overflow-hidden shadow-2xl grid md:grid-cols-2">
-        
+
         {/* Left Side */}
         <div className="hidden md:flex flex-col justify-between p-12 bg-white dark:bg-[#1A1A1A]">
+
           <div>
             <h1 className="text-4xl font-black text-gray-900 dark:text-white">
               FOO<span className="text-[#b4e716]">TURF</span>
@@ -84,13 +83,12 @@ const Signup = ({ setAuthMode } ) => {
 
           <div>
             <h2 className="text-2xl font-bold leading-tight text-gray-900 dark:text-white">
-              Create Your
-              
-              Account
+              Welcome
+              Back!
             </h2>
 
-            <p className="mt-3 text-lg text-gray-500">
-              Join Footurf and start booking football turfs in seconds.
+            <p className="mt-4 text-lg text-gray-500">
+              Login and continue your football journey.
             </p>
           </div>
 
@@ -106,32 +104,19 @@ const Signup = ({ setAuthMode } ) => {
         {/* Right Side */}
         <div className="flex items-center justify-center p-8 md:p-12">
           <div className="w-full max-w-md">
+
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Sign Up
+              Sign In
             </h2>
 
             <p className="mt-2 text-gray-500">
-              Create your account and start playing
+              Enter your credentials to continue
             </p>
 
             <form
               onSubmit={handleSubmit}
               className="mt-10 space-y-5"
             >
-              {/* Full Name */}
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Full Name"
-                value={formData.fullName}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-2xl border bg-gray-50 dark:bg-[#222222] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b4e716] ${
-                  error.fullName
-                    ? "border-red-500"
-                    : "border-gray-200 dark:border-slate-700"
-                }`}
-              />
-
               {/* Email */}
               <input
                 type="email"
@@ -140,7 +125,7 @@ const Signup = ({ setAuthMode } ) => {
                 value={formData.email}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-2xl border bg-gray-50 dark:bg-[#222222] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b4e716] ${
-                  error.email
+                  error?.email || error?.general
                     ? "border-red-500"
                     : "border-gray-200 dark:border-slate-700"
                 }`}
@@ -154,8 +139,8 @@ const Signup = ({ setAuthMode } ) => {
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-2xl border bg-gray-50 dark:bg-[#222222]  dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b4e716] ${
-                    error.password
+                  className={`w-full px-4 py-3 rounded-2xl border bg-gray-50 dark:bg-[#222222] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b4e716] ${
+                    error?.password || error?.general
                       ? "border-red-500"
                       : "border-gray-200 dark:border-slate-700"
                   }`}
@@ -170,56 +155,62 @@ const Signup = ({ setAuthMode } ) => {
                 </button>
               </div>
 
-              {/* Submit */}
+              {/* Forgot Password */}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="text-sm text-[#b4e716] hover:text-white"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full py-3 rounded-2xl bg-[#b4e716] hover:bg-white hover:text-black text-white font-semibold transition disabled:opacity-50"
               >
-                {loading ? "Creating Account..." : "Create Account"}
+                {loading ? "Signing In..." : "Sign In"}
               </button>
 
               {/* Errors */}
-              {error.fullName && (
-                <p className="text-red-500 text-sm text-center">
-                  {error.fullName}
+              {error?.general && (
+                <p className="text-center text-red-500 text-sm">
+                  {error.general}
                 </p>
               )}
 
-              {error.email && (
-                <p className="text-red-500 text-sm text-center">
+              {error?.email && (
+                <p className="text-center text-red-500 text-sm">
                   {error.email}
                 </p>
               )}
 
-              {error.password && (
-                <p className="text-red-500 text-sm text-center">
+              {error?.password && (
+                <p className="text-center text-red-500 text-sm">
                   {error.password}
-                </p>
-              )}
-
-              {error.general && (
-                <p className="text-red-500 text-sm text-center">
-                  {error.general}
                 </p>
               )}
             </form>
 
             <p className="text-center mt-8 text-gray-500">
-              Already have an account?{" "}
+              Don't have an account?{" "}
               <button
-                  type="button"
-                  onClick={() => setAuthMode("login")}
-                  className="text-[#b4e716] font-semibold hover:underline"
-              >
-                Sign In
-              </button>
+                type="button"
+                onClick={() => setAuthMode("signup")}
+                className="text-[#b4e716] font-semibold hover:underline"
+            >
+             Sign Up
+            </button>
             </p>
+
           </div>
         </div>
+
       </div>
-   // </div>
+    
   );
 };
 
-export default Signup;
+export default Login;
