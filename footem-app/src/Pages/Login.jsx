@@ -149,7 +149,7 @@ const Login = ({ setAuthMode } ) => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer"
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
@@ -159,7 +159,7 @@ const Login = ({ setAuthMode } ) => {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  className="text-sm text-[#b4e716] hover:text-white"
+                  className="text-sm text-[#b4e716] hover:text-white cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -169,7 +169,7 @@ const Login = ({ setAuthMode } ) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-2xl bg-[#b4e716] hover:bg-white hover:text-black text-white font-semibold transition disabled:opacity-50"
+                className="w-full py-3 rounded-2xl bg-[#b4e716] hover:bg-white hover:text-black text-white font-semibold transition disabled:opacity-50 cursor-pointer"
               >
                 {loading ? "Signing In..." : "Sign In"}
               </button>
@@ -199,7 +199,7 @@ const Login = ({ setAuthMode } ) => {
               <button
                 type="button"
                 onClick={() => setAuthMode("signup")}
-                className="text-[#b4e716] font-semibold hover:underline"
+                className="text-[#b4e716] font-semibold hover:underline cursor-pointer"
             >
              Sign Up
             </button>

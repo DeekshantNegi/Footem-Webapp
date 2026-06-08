@@ -127,7 +127,7 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
                         setAuthMode("login"); // default open as login
                         setShowAuthModal(true);
                     }}
-                    className="border border-white text-white hover:text-[#b4e716] hover:border-[#b4e716] px-4 py-2 rounded-full font-semibold transition-all duration-300"
+                    className="border border-white text-white hover:text-[#b4e716] hover:border-[#b4e716] px-4 py-2 rounded-full font-semibold transition-all duration-300 cursor-pointer"
                   >
                     Login / Signup
                 </button>
