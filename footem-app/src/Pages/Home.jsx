@@ -71,7 +71,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-r from-[#ffffff] to-[#D4DFED]">
+    <div className="min-h-screen  w-full dark:bg-[#121212]">
       <div className="relative h-[99vh] w-full bg-center bg-cover bg-no-repeat">
         <video
           autoPlay
@@ -98,145 +98,227 @@ const Home = () => {
         </motion.div>
         <div className=""></div>
       </div>
+<div className="bg-[#111111] px-8 py-10">
 
-      <div className=" ">
-        <h1
-          className="font-semibold text-4xl pt-[1vmax] pl-[2vmax] text-[#1c4b41]"
-          style={{ fontFamily: "Poppins" }}
+  {/* ── Featured Turfs Header ── */}
+  <div className="flex items-center justify-between mb-6">
+    <div>
+      <p className="text-[#c8f028] text-xs font-semibold uppercase tracking-widest mb-1">
+        Featured
+      </p>
+      <h1 className="text-white text-3xl font-bold">Featured Turfs</h1>
+    </div>
+    <button className="text-white text-sm flex items-center gap-1 hover:text-[#c8f028] transition-colors">
+      View all <span>→</span>
+    </button>
+  </div>
+
+  {/* ── Carousel ── */}
+  <div className="relative">
+    {/* Left Arrow */}
+    <button className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white text-black rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-[#c8f028] transition-colors">
+      ‹
+    </button>
+
+    <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] scroll-smooth pb-2">
+      {turfdata.map((turf) => (
+        <Card
+          key={turf.id}
+          turf={turf}
+          onClick={() => (handleSelectedTurf(turf), navigate(`/turf/${turf.id}`))}
+        />
+      ))}
+    </div>
+
+    {/* Right Arrow */}
+    <button className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white text-black rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-[#c8f028] transition-colors">
+      ›
+    </button>
+  </div>
+</div>
+
+{/* ── Quick Booking ── */}
+<div className="bg-white px-8 py-24">
+
+  <div className="flex flex-col md:flex-row md:items-center gap-8">
+
+    {/* Left: heading */}
+    <div className="md:w-1/3">
+      <p className="text-[#c8f028] text-xs font-bold uppercase tracking-widest mb-2">
+        Book in Seconds
+      </p>
+      <h2 className="text-3xl font-extrabold text-gray-900 leading-tight mb-3">
+        Quick Booking
+      </h2>
+      <p className="text-gray-500 text-sm leading-relaxed">
+        Select your preferred turf,<br />date, time and book instantly.
+      </p>
+    </div>
+
+    {/* Right: inputs + button */}
+    <div className="md:w-2/3 flex flex-col gap-4">
+      {/* Input row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2.5 bg-white shadow-sm">
+          <span className="text-gray-400 text-sm">📍</span>
+          <input
+            type="text"
+            placeholder="Select Location"
+            className="text-sm text-gray-500 bg-transparent focus:outline-none w-full placeholder:text-gray-400"
+          />
+        </div>
+        <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2.5 bg-white shadow-sm">
+          <span className="text-gray-400 text-sm">📅</span>
+          <input
+            type="text"
+            placeholder="Select Date"
+            className="text-sm text-gray-500 bg-transparent focus:outline-none w-full placeholder:text-gray-400"
+          />
+        </div>
+        <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2.5 bg-white shadow-sm">
+          <span className="text-gray-400 text-sm">🕐</span>
+          <input
+            type="text"
+            placeholder="Select Time"
+            className="text-sm text-gray-500 bg-transparent focus:outline-none w-full placeholder:text-gray-400"
+          />
+        </div>
+        <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2.5 bg-white shadow-sm">
+          <span className="text-gray-400 text-sm">👥</span>
+          <input
+            type="text"
+            placeholder="Players"
+            className="text-sm text-gray-500 bg-transparent focus:outline-none w-full placeholder:text-gray-400"
+          />
+        </div>
+      </div>
+
+      {/* Search button */}
+      <button className="w-full bg-[#c8f028] text-black font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all duration-200 shadow-md">
+        Search Turfs 🔍
+      </button>
+    </div>
+  </div>
+
+  {/* ── Trust badges ── */}
+  <div className="mt-10 pt-6 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-[#c8f028] text-xl">⚡</span>
+      <p className="text-sm text-gray-600 font-medium">Instant Confirmation</p>
+    </div>
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-[#c8f028] text-xl">🛡️</span>
+      <p className="text-sm text-gray-600 font-medium">No Hidden Charges</p>
+    </div>
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-[#c8f028] text-xl">🔒</span>
+      <p className="text-sm text-gray-600 font-medium">Pay Securely</p>
+    </div>
+  </div>
+
+</div>
+
+      <div className="w-full bg-[#121212] py-16 px-6">
+
+  {/* ── Section Header ── */}
+  <div className="text-center mb-12">
+    <p className="text-[#c8f028] text-xs font-bold uppercase tracking-widest mb-2">
+      Testimonials
+    </p>
+    <h2 className="text-white text-3xl font-bold">What Players Say</h2>
+    <div className="w-12 h-[3px] bg-[#c8f028] mt-3 rounded-full mx-auto" />
+  </div>
+
+  {/* ── Testimonial Card ── */}
+  <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-6 items-stretch">
+
+    {/* Left: Feature list */}
+    <div className="w-full sm:w-[40%] flex flex-col justify-center gap-5">
+      {[
+        { label: "Easy Online Booking", highlight: false },
+        { label: "Affordable Rates",    highlight: true  },
+        { label: "Verified Turfs",      highlight: false },
+        { label: "Real-Time Availability", highlight: false },
+      ].map((item) => (
+        <div key={item.label} className="flex items-center gap-3 group">
+          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+            item.highlight ? "bg-[#c8f028]" : "bg-white/20"
+          }`} />
+          <h3 className={`font-semibold text-lg tracking-tight transition-colors ${
+            item.highlight ? "text-[#c8f028]" : "text-white/80"
+          }`}>
+            {item.label}
+          </h3>
+        </div>
+      ))}
+    </div>
+
+    {/* Right: Review card */}
+    <div className="w-full sm:w-[60%] bg-[#1a1a1a] border border-white/5 rounded-2xl p-6 flex flex-col gap-5
+      hover:border-[#c8f028]/20 transition-all duration-300">
+
+      {/* Quote icon */}
+      <div className="text-[#c8f028] text-4xl leading-none font-serif">"</div>
+
+      {/* Sliding reviews */}
+      <div
+        className="overflow-hidden w-full flex-1"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          Featured Turfs
-        </h1>
-        <div className="flex w-full h-[23em] md:h-[25em] overflow-x-auto [scrollbar-width:none]   ">
-          {turfdata.map((turf) => (
-            <Card
-              key={turf.id}
-              turf={turf} 
-              onClick={() => (
-                handleSelectedTurf(turf), navigate(`/turf/${turf.id}`)
-              )}
-              className="w-[300px]"
-            />
+          {comments.map((c, i) => (
+            <div
+              key={i}
+              className="min-w-full flex flex-col gap-3"
+            >
+              <p className="text-gray-300 text-sm leading-relaxed">
+                {c.text}
+              </p>
+
+              {/* Author row */}
+              <div className="flex items-center gap-3 mt-2">
+                <div className="w-9 h-9 rounded-full bg-[#c8f028]/10 border border-[#c8f028]/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[#c8f028] text-xs font-bold uppercase">
+                    {c.author?.[0] ?? "U"}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">{c.author}</p>
+                  {/* Star row */}
+                  <div className="flex gap-0.5 mt-0.5">
+                    {[1,2,3,4,5].map((s) => (
+                      <svg key={s} className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
 
-      <div className="w-full flex justify-center ">
-        <div className="bg-[#1c4b41] w-full -mt-5 h-full  md:h-[400px] rounded-xl shadow-inner p-[1vmax]  overflow-hidden z-10 ">
-          <h1
-            className="text-white font-semibold sm:text-4xl p-[0.5vmax]"
-            style={{ fontFamily: "Poppins" }}
-          >
-            Quick Booking
-          </h1>
-          <div className="w-full h-full p-[0.5vmax] flex gap-[5vmax]  ">
-            <div className="bg-gray-100 m-[1vmax] rounded-2xl w-full md:w-1/2 md:h-[70%] shadow-lg">
-              <form
-                action=""
-                className="w-full h-full p-[2vmax] flex flex-col space-y-4 "
-              >
-                <input
-                  type="text"
-                  className="w-full shadow-lg rounded-xl h-[30px] p-[20px] focus:outline-none "
-                  placeholder="Enter Location"
-                />
-                <input
-                  type="text"
-                  className="w-1/2 h-[30px] shadow-lg rounded-xl p-[20px] focus:outline-none "
-                  placeholder="Enter Date"
-                />
-                <button
-                  type="submit"
-                  className="cursor-pointer bg-green-700 shadow-2xl text-white p-[1vmax] rounded-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
-                >
-                  Check Availability
-                </button>
-              </form>
-            </div>
-
-            <div className="hidden md:block md:w-1/3 h-[80%] rounded-xl shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out cursor-pointer overflow-hidden">
-              <div className="w-full h-[70%] bg-gray-300 shadow-inner"></div>
-              <div className="w-full h-[30%] bg-gray-100 flex justify-center items-center">
-                <h2 className="text-xl">Discover </h2>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="w-full min-h-full sm:h-[27vmax] flex sm:flex-row flex-col mt-[1vmax]">
-        <div className="w-full sm:w-[40%] md:w-1/2 h-full flex justify-center items-center   ">
+      {/* Dot indicators */}
+      <div className="flex items-center gap-2 mt-2">
+        {comments.map((_, i) => (
           <div
-            className="p-[2vmax] sm:p-[0vmax] space-y-[2vmax] text-[#1c4b41]"
-            style={{ fontFamily: "Poppins" }}
-          >
-            <h1 className="font-medium -tracking-[0.07em] text-3xl sm:text-[3vmax] ">
-              Easy Online Booking
-            </h1>
-            <h1 className="font-medium text-4xl sm:text-5xl -tracking-[0.07em] text-[#b4e716] ">
-              Affordable Rates
-            </h1>
-            <h1 className="font-medium text-3xl sm:text-[3vmax] -tracking-[0.07em] ">
-              Verified Turfs
-            </h1>
-            <h1 className="font-medium text-3xl sm:text-[3vmax] -tracking-[0.07em] ">
-              Real-Time Availability
-            </h1>
-          </div>
-        </div>
-
-        <div className=" w-full h-full sm:w-[60%] md:w-1/2 flex md:justify-center items-center">
-          <div className="h-full lg:h-[75%] w-full md:w-[80%] flex rounded-2xl p-[1vmax] bg-[#282828] gap-[1vmax] ">
-            <img
-              src={HeroImg}
-              alt="Hero"
-              className="h-full w-1/2 hidden sm:block object-cover rounded-2xl"
-            />
-
-            <div className=" md:w-1/2 h-full p-[1vmax] text-white space-y-[1vmax]">
-              <div className="w-full h-full flex flex-col sm:space-y-3 ">
-                <div className="w-full h-full flex sm:flex-col justify-end gap-3 sm:gap-0">
-                  <img
-                    className="rounded-full w-[50px] h-[50px] border-1 -ml-[5px]"
-                    src=""
-                    alt=""
-                  />
-                  <div
-                    className="overflow-hidden w-full"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                  >
-                    <div
-                      className="flex transition-transform duration-500 ease-in-out "
-                      style={{ transform: `translateX(-${index * 100}%)` }}
-                    >
-                      {comments.map((c, i) => (
-                        <div
-                          key={i}
-                          className=" min-w-full rounded-xl whitespace-pre-wrap break-words overflow-hidden leading-relaxed"
-                        >
-                          <h2 className="font-medium">{c.author}</h2>
-                          <p className="text-sm text-gray-300">{c.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-center space-x-1">
-                  {comments.map((_, i) => (
-                    <div
-                      key={i}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        i === index ? "bg-gray-600" : "bg-gray-300"
-                      }`}
-                    ></div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+            key={i}
+            className={`rounded-full transition-all duration-300 ${
+              i === index
+                ? "bg-[#c8f028] w-5 h-1.5"
+                : "bg-white/15 w-1.5 h-1.5"
+            }`}
+          />
+        ))}
       </div>
+    </div>
+  </div>
+</div>
 
       <div className="relative w-full h-[30vmax] md:h-[20vmax] flex justify-center items-center text-5xl sm:text-7xl overflow-hidden">
         <video

@@ -6,185 +6,160 @@ import { OwnerContext } from "../context/OwnerContext.jsx";
 
 const Navbar = ({ setShowAuthModal, setAuthMode }) => {
   const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const { user, logout } = useContext(AuthContext);
   const { ownerProfile } = useContext(OwnerContext);
-  const [menuOpen, setMenuOpen] = useState(false);
+
   const location = useLocation();
+  const menuRef = useRef();
 
-  const menuRef= useRef();
-
-  useEffect(()=>{
-    const handler = (e)=>{
-      if(!menuRef.current?.contains(e.target)){
+  useEffect(() => {
+    const handler = (e) => {
+      if (!menuRef.current?.contains(e.target)) {
         setMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
-    return ()=>{ document.removeEventListener("mousedown", handler) };
-  },[]);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const navItems = [
+    { name: "Home", path: "/" },
+    { name: "My Bookings", path: "/mybookings" },
+    { name: "Turfs", path: "/Turfs" },
+  ];
 
   return (
-    <div className="relative ">
-      <nav
-        className={` w-full h-[4em] lg:h-[5.5em] z-50 ${location.pathname === "/" ? "absolute top-0 left-0 " : "bg-[#0a0a0a]   top-0 left-0 shadow-2xl"}`}
-      >
-        <div className="flex justify-between ">
-          <div>
-            <h1
-              className="text-white sm:mx-[2vmax] my-[1vmax] text-4xl"
-              style={{ fontFamily: "BBH Sans Hegarty" }}
-            >
-              Footurf
-            </h1>
-          </div>
+    <nav className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
+      <div className="flex items-center justify-between px-6 md:px-10 h-16">
 
-          <div className="flex w-full justify-end  md:px-[1.5vmax] py-[1vmax] gap-[0.5vw]  mx-[1.5vw] my-1">
-            <div className="bg-gradient-to-r from-[#ffffff] to-[#D4DFED] flex rounded-full justify-end md:w-1/2 gap-[0.5rem] items-center p-[0.1em] shadow-2xl">
-              <form className="hidden md:block w-full rounded-full focus:ring-0 ">
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="w-full h-[1.7em] p-[1em] focus:outline-none "
-                />
-              </form>
-              <button className="bg-[#b4e716] rounded-full w-[45px] h-[40px] flex justify-center items-center">
-                <Search />
-              </button>
-            </div>
+        {/* Logo */}
+        <h1 className="text-white text-2xl font-bold tracking-wide">
+          FOO<span className="text-[#b4e716]">TURF</span>
+        </h1>
 
-            <ul className="hidden sm:flex justify-content items-center text-white text-[2.5vmax]  lg:text-[1.5em]  rounded-full px-[1vmax] space-x-[4vw] lg:space-x-[0.5vmax]">
-              <li
-                className={`hover:bg-black/10 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716] active:scale-95
-              ${
-                location.pathname === "/" ? "text-[#b4e716] bg-black/20 " : ""
-              }`}
-              >
-                <Link to="/">Home</Link>
-              </li>
-              <li
-                className={`hover:bg-black/5 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716] active:scale-95
-              ${
-                location.pathname === "/mybookings"
-                  ? "text-[#b4e716] bg-black/20"
-                  : ""
-              }`}
-              >
-                <Link to="/mybookings">MyBookings</Link>
-              </li>
-              <li
-                className={`hover:bg-black/5 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716] active:scale-95
-              ${
-                location.pathname === "/Turfs"
-                  ? "text-[#b4e716] bg-black/20"
-                  : ""
-              }`}
-              >
-                <Link to="/Turfs">Turfs</Link>
-              </li>
-              { ownerProfile?.status === "verified" && (
-                <li
-                  className={`hover:bg-black/5 hover:backdrop-blur-sm px-[1vmax] py-[0.1vmax] rounded-full transition duration-300 hover:text-[#b4e716] active:scale-95
-                ${
-                  location.pathname === "/owner-dashboard"
-                    ? "text-[#b4e716] bg-black/20"
-                    : ""
-                }`}
-                >
-                  <Link to="/owner-dashboard">Owner Dashboard</Link>
-                </li>
-              )}
-            </ul>
-
-            <ul
-              className={`fixed md:hidden w-1/2 flex flex-col top-0 right-0  h-full text-white bg-black/80 backdrop-blur-sm p-4 transform transition-all duration-300 ease-in-out z-10 ${
-                open
-                  ? "translate-x-0 opacity-100"
-                  : "translate-x-full opacity-0"
-              }`}
-            >
-              <div className="mt-[1rem]">
-                <li className=" rounded-lg mt-[0.5rem] py-2 active:text-[#b4e716]">
-                  <Link to="/">Home</Link>
-                </li>
-                <li className=" rounded-lg mt-[0.5rem] py-2 active:text-[#b4e716]">
-                  <Link to="/mybookings">MyBookings</Link>
-                </li>
-                <li className=" rounded-lg mt-[0.5rem] py-2 active:text-[#b4e716]">
-                  <Link to="/Turfs">Turfs</Link>
-                </li>
-                {ownerProfile?.status === "verified" && (
-                  <li className=" rounded-lg mt-[0.5rem] py-2 active:text-[#b4e716]">
-                    <Link to="/owner-dashboard">Owner Dashboard</Link>
-                  </li>
-                )}
-              </div>
-            </ul>
-
-           {!user ? (
-                <div className="flex items-center gap-2">
-                 <button
-                    onClick={() => {
-                        setAuthMode("login"); // default open as login
-                        setShowAuthModal(true);
-                    }}
-                    className="border border-white text-white hover:text-[#b4e716] hover:border-[#b4e716] px-4 py-2 rounded-full font-semibold transition-all duration-300 cursor-pointer"
-                  >
-                    Login / Signup
-                </button>
-
-                
-                  </div>
-            ) : (
-              <div className="relative rounded-full border-3 border-green-600 hover:border-green-500 bg-white hover:bg-gray-100 hover:shadow-lg transition-all duration-300">
-                <div
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className="cursor-pointer  hover:scale-105 active:scale-95 transition-all duration-300"
-                >
-                  {user.avatar?.url ? (
-                    <img
-                      src={user.avatar.url}
-                      alt="avatar"
-                      className="w-10 h-10 rounded-full border-2 border-white"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full font-semibold border-2 border-white flex items-center justify-center">
-                      {user.email.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                
-                {menuOpen && (
-                  <div 
-                    ref={menuRef}
-                    className="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-inner p-0.5 text-left z-5">
-                     
-                      <Link to="/profile" className="inline-block w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300">Profile</Link>
-                      {ownerProfile && (
-                        <Link to={ownerProfile?.status === "verified" ? "/owner-dashboard" : "/owner-profile"} className="inline-block w-full px-4 py-2 hover:bg-gray-200 text-md font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300">Owner</Link>
-                      )}      
-                    <button
-                      onClick={async () => {
-                        await logout();
-                        setMenuOpen(false);
-                      }}
-                      className="w-full px-4 py-2 hover:bg-gray-200 text-md text-left font-semibold cursor-pointer hover:shadow active:scale-95 transition-all duration-300 "
-                    >
-                      Logout <LogOut strokeWidth={2.3} className="inline ml-2 text-red-500 font-bold " />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-            <button
-              className=" sm:hidden text-white z-50 "
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <X size={28} /> : <Menu className=" " size={28} />}
-            </button>
-          </div>
+        {/* Search (desktop) */}
+        <div className="hidden md:flex items-center bg-white/10 border border-white/10 rounded-full px-4 py-2 w-[35%]">
+          <input
+            type="text"
+            placeholder="Search turfs..."
+            className="bg-transparent w-full outline-none text-white placeholder-gray-400"
+          />
+          <Search className="text-[#b4e716]" size={18} />
         </div>
-      </nav>
-    </div>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-6 text-white">
+
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`text-sm font-medium transition-all duration-300 hover:text-[#b4e716] ${
+                location.pathname === item.path ? "text-[#b4e716]" : ""
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
+
+          {ownerProfile?.status === "verified" && (
+            <Link
+              to="/owner-dashboard"
+              className={`text-sm font-medium transition-all duration-300 hover:text-[#b4e716] ${
+                location.pathname === "/owner-dashboard" ? "text-[#b4e716]" : ""
+              }`}
+            >
+              Dashboard
+            </Link>
+          )}
+
+          {/* AUTH BUTTON */}
+          {!user ? (
+            <button
+              onClick={() => {
+                setAuthMode("login");
+                setShowAuthModal(true);
+              }}
+              className="bg-[#b4e716] text-black px-4 py-2 rounded-full font-semibold hover:scale-105 active:scale-95 transition-all"
+            >
+              Login / Signup
+            </button>
+          ) : (
+            <div className="relative" ref={menuRef}>
+              <div
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center cursor-pointer"
+              >
+                {user.email.charAt(0).toUpperCase()}
+              </div>
+
+              {menuOpen && (
+                <div className="absolute right-0 mt-3 w-44 bg-black/90 border border-white/10 rounded-xl overflow-hidden text-white">
+                  <Link className="block px-4 py-2 hover:bg-white/10" to="/profile">
+                    Profile
+                  </Link>
+
+                  {ownerProfile && (
+                    <Link className="block px-4 py-2 hover:bg-white/10" to="/owner-profile">
+                      Owner
+                    </Link>
+                  )}
+
+                  <button
+                    onClick={async () => {
+                      await logout();
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-red-500/20 text-red-400"
+                  >
+                    Logout <LogOut size={16} className="inline ml-2" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile menu button */}
+        <button
+          className="md:hidden text-white"
+          onClick={() => setOpen(!open)}
+        >
+          {open ? <X size={26} /> : <Menu size={26} />}
+        </button>
+      </div>
+
+      {/* Mobile menu */}
+      <div
+        className={`md:hidden fixed top-16 right-0 w-2/3 h-screen bg-black/95 backdrop-blur-xl border-l border-white/10 transform transition-transform duration-300 ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="p-6 flex flex-col gap-4 text-white">
+
+          {navItems.map((item) => (
+            <Link key={item.path} to={item.path} onClick={() => setOpen(false)}>
+              {item.name}
+            </Link>
+          ))}
+
+          {!user && (
+            <button
+              onClick={() => {
+                setAuthMode("login");
+                setShowAuthModal(true);
+                setOpen(false);
+              }}
+              className="mt-4 bg-[#b4e716] text-black px-4 py-2 rounded-full font-semibold"
+            >
+              Login / Signup
+            </button>
+          )}
+        </div>
+      </div>
+    </nav>
   );
 };
 

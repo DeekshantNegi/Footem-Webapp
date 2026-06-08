@@ -61,7 +61,7 @@ export default function TurfDetails() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-white to-gray-50 sm:p-6 md:p-12"
+      className="min-h-screen  bg-gradient-to-b from-white to-gray-50 sm:p-6 md:p-12"
       style={{
         backgroundImage: `url(${selectedTurf.image})`,
         backgroundSize: "cover",
