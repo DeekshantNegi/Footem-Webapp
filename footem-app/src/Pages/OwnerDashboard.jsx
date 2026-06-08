@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OwnerContext } from "../context/OwnerContext.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
+import api from "../api/Axios.js";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import Spinner from "../Components/Spinner.jsx";
@@ -38,6 +39,27 @@ export default function OwnerDashboard() {
       return;
     }
   }, [user, ownerProfile, navigate]);
+
+  useEffect(() => {
+    const fetchMyTurfs = async () => {
+      if (!ownerProfile || ownerProfile.status !== "verified") return;
+
+      try {
+        const res = await api.get("/turfs/my-turfs");
+        const ownerTurfs = res.data.data || [];
+        setTurfs(ownerTurfs);
+        setStats({
+          totalBookings: ownerTurfs.reduce((sum, turf) => sum + (turf.bookings?.length || 0), 0),
+          totalRevenue: ownerTurfs.reduce((sum, turf) => sum + (turf.priceperhour || 0), 0),
+          totalTurfs: ownerTurfs.length,
+        });
+      } catch (err) {
+        console.error("Failed to fetch owner turfs:", err.response?.data?.message || err.message);
+      }
+    };
+
+    fetchMyTurfs();
+  }, [ownerProfile]);
 
   if (loading) {
     return <Spinner />;
@@ -91,6 +113,7 @@ export default function OwnerDashboard() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/add-turf")}
                 className="bg-[#b4e716] hover:bg-[#9fd700] text-black font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center gap-2"
               >
                 <Plus size={20} />
@@ -204,6 +227,7 @@ export default function OwnerDashboard() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/add-turf")}
                 className="bg-gradient-to-r from-[#b4e716] to-[#9fd700] hover:shadow-lg hover:shadow-[#b4e716]/50 text-black font-bold py-3 px-8 rounded-lg transition duration-300 inline-flex items-center gap-2"
               >
                 <Plus size={20} />
@@ -217,7 +241,7 @@ export default function OwnerDashboard() {
                   key={turf._id}
                   className="bg-[#2a2a2a] rounded-lg p-4 hover:border-[#b4e716] border border-gray-700 transition"
                 >
-                  <h3 className="font-bold text-lg mb-2">{turf.name}</h3>
+                  <h3 className="font-bold text-lg mb-2">{turf.turfName}</h3>
                   <p className="text-gray-400 text-sm mb-4">{turf.location}</p>
                   <button className="w-full bg-[#b4e716] hover:bg-[#9fd700] text-black font-bold py-2 rounded-lg transition">
                     Manage
