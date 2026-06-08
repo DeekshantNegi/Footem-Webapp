@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Pages/Home";
 import Navbar from "./Components/Navbar";
 import Signup from "./Pages/SignUp";
+import Login from "./Pages/Login";
+import AuthModal from "./Components/AuthModal";
 import TurfDetails from "./Pages/TurfDetails";
 import MyBookings from "./Pages/MyBookings";
 import Dashboard from "./Pages/Dashboard";
@@ -16,7 +18,10 @@ import { BookingProvider } from "./context/BookingContext";
 import { OwnerProvider } from "./context/OwnerContext.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 function App() {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
   return (
     <>
     <ToastContainer />
@@ -25,9 +30,13 @@ function App() {
           <OwnerProvider>
             <div className="App">
               <Router>
-                <Navbar />
+                <Navbar
+                   setShowAuthModal={setShowAuthModal}
+                   setAuthMode={setAuthMode}
+                />
                 <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/turf/:id" element={<TurfDetails />} />
                   <Route path="/mybookings" element={<MyBookings />} />
@@ -38,6 +47,13 @@ function App() {
                   <Route path="/owner-profile" element={<OwnerProfile />} />
                   <Route path="/owner-dashboard" element={<OwnerDashboard />} />
                 </Routes>
+                {showAuthModal && (
+                  <AuthModal
+                     mode={authMode}
+                     setAuthMode={setAuthMode}
+                     onClose={() => setShowAuthModal(false)}
+                  />
+                )}
               </Router>
             </div>
           </OwnerProvider>

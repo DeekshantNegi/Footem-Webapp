@@ -4,7 +4,7 @@ import { Menu, X, Search, LogOut } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import { OwnerContext } from "../context/OwnerContext.jsx";
 
-const Navbar = () => {
+const Navbar = ({ setShowAuthModal, setAuthMode }) => {
   const [open, setOpen] = useState(false);
   const { user, logout } = useContext(AuthContext);
   const { ownerProfile } = useContext(OwnerContext);
@@ -121,13 +121,19 @@ const Navbar = () => {
             </ul>
 
            {!user ? (
-              <div
-                className={`flex items-center border-1 text-[0.8em] lg:text-[1vmax] font-semibold text-white hover:text-[#b4e716] px-4 py-1 rounded-full cursor-pointer active:scale-95 transition-all duration-300`}
-              >
-                <Link className="" to="/signup">
-                  SignUp
-                </Link>
-              </div>
+                <div className="flex items-center gap-2">
+                 <button
+                    onClick={() => {
+                        setAuthMode("login"); // default open as login
+                        setShowAuthModal(true);
+                    }}
+                    className="border border-white text-white hover:text-[#b4e716] hover:border-[#b4e716] px-4 py-2 rounded-full font-semibold transition-all duration-300"
+                  >
+                    Login / Signup
+                </button>
+
+                
+                  </div>
             ) : (
               <div className="relative rounded-full border-3 border-green-600 hover:border-green-500 bg-white hover:bg-gray-100 hover:shadow-lg transition-all duration-300">
                 <div
