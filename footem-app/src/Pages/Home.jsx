@@ -362,7 +362,9 @@ const Home = () => {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between px-[3vmax] gap-10">
           {/* Left */}
           <div className="space-y-3">
-            <h1 className="text-2xl font-semibold text-white">Footurf</h1>
+            <h1 className="text-white text-2xl font-bold tracking-wide">
+              FOO<span className="text-[#b4e716]">TURF</span>
+            </h1>
             <p className="text-sm text-gray-400 max-w-sm">
               Find, book, and play at the best turfs near you. Experience
               hassle-free booking and verified listings.

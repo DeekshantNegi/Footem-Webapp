@@ -61,14 +61,14 @@ export default function TurfDetails() {
 
   return (
     <div
-      className="min-h-screen  bg-gradient-to-b from-white to-gray-50 sm:p-6 md:p-12"
+      className="min-h-screen bg-gradient-to-b from-white to-gray-50 sm:p-6 md:p-12 "
       style={{
         backgroundImage: `url(${selectedTurf.image})`,
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 pt-10 lg:grid-cols-3 gap-8">
         {/* Left: Images */}
         <div className="lg:col-span-2 ">
           <div className="rounded-2xl sm:overflow-hidden shadow-lg ">
