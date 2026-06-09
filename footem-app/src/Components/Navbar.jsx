@@ -92,7 +92,17 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center cursor-pointer"
               >
-                {user.email.charAt(0).toUpperCase()}
+                 {user.avatar?.url ? (
+                    <img
+                      src={user.avatar.url}
+                      alt="avatar"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full font-semibold border-2 border-white flex items-center justify-center">
+                      {user.email.charAt(0).toUpperCase()}
+                    </div>
+                  )}
               </div>
 
               {menuOpen && (
