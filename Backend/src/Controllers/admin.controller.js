@@ -31,7 +31,7 @@ export const approveOwner = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, owner, "Owner request approved successfully"));
 });
 export const rejectOwner = asyncHandler(async (req, res) => {
-  const owner = await Owner.findById(req.params.id);
+  const owner = await Owner.findOne({ user: req.params.userId });
   if (!owner) {
     throw new ApiError(404, "Owner request not found");
   }
