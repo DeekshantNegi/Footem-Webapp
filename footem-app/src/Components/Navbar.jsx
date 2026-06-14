@@ -75,6 +75,17 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
             </Link>
           )}
 
+          {user?.role === "admin" && (
+            <Link
+              to="/admin-dashboard"
+              className={`text-sm font-medium transition-all duration-300 hover:text-[#b4e716] ${
+                location.pathname === "/admin-dashboard" ? "text-[#b4e716]" : ""
+              }`}
+            >
+              Admin
+            </Link>
+          )}
+
           {/* AUTH BUTTON */}
           {!user ? (
             <button
@@ -154,6 +165,12 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
               {item.name}
             </Link>
           ))}
+
+          {user?.role === "admin" && (
+            <Link to="/admin-dashboard" onClick={() => setOpen(false)}>
+              Admin
+            </Link>
+          )}
 
           {!user && (
             <button

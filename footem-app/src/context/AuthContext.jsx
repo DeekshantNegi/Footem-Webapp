@@ -21,33 +21,44 @@ export const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(true);
 
+  const updateUser = (newUser) => {
+    try {
+      if (!newUser) {
+        localStorage.removeItem("user");
+        setUser(null);
+      } else {
+        localStorage.setItem("user", JSON.stringify(newUser));
+        setUser(newUser);
+      }
+    } catch (err) {
+      console.error("Failed to update user in storage:", err);
+    }
+  };
+
   const login = (userData) => {
-    localStorage.setItem("user", JSON.stringify(userData.data.user));
-    setUser(userData.data.user);
+    const u = userData?.data?.user || null;
+    updateUser(u);
   };
 
   const logout = async () => {
     try {
       await api.post("/users/logout", {});
-      localStorage.removeItem("user");
-      setUser(null);
+      updateUser(null);
     } catch (err) {
       console.error("Logout failed:", err);
-      localStorage.removeItem("user");
-      setUser(null);
+      updateUser(null);
     }
   };
 
   useEffect(() => {
     const initAuth = async () => {
+
       try {
         const res = await api.get("/users/userprofile");
-        setUser(res.data.data);
-        localStorage.setItem("user", JSON.stringify(res.data.data));
+        updateUser(res.data.data);
       } catch (err) {
         console.error("Failed to fetch user profile:", err.response?.data?.message || err.message);
-        localStorage.removeItem("user");
-        setUser(null);
+        updateUser(null);
       } finally {
         setLoading(false);
       }
@@ -57,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, updateUser, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

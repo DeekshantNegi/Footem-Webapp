@@ -8,7 +8,7 @@ import api from "../api/Axios";
 import { validateLogin } from "../Utils/validatedata";
 import { AuthContext } from "../context/AuthContext";
 
-const Login = ({ setAuthMode } ) => {
+const Login = ({ setAuthMode, onClose } ) => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
@@ -51,6 +51,7 @@ const Login = ({ setAuthMode } ) => {
       const res = await api.post("/users/login", formData);
 
       login(res.data);
+      onClose();
 
       toast.success("Login successful!");
 

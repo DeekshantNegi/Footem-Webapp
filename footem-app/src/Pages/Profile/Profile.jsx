@@ -13,7 +13,7 @@ import Spinner from "../../Components/Spinner.jsx";
 
 export default function ProfilePage() {
   const [openEdit, setOpenEdit] = useState(false);
-  const { user, setUser, logout } = useContext(AuthContext);
+  const { user, updateUser, logout } = useContext(AuthContext);
   const { ownerProfile } = useContext(OwnerContext);
   const [formdata, setFormdata] = useState({
     fullName: user?.fullName || "",
@@ -51,7 +51,7 @@ export default function ProfilePage() {
       setLoading(true);
       const res = await api.patch("/users/userprofile", updatedData);
       toast.success("Profile updated successfully!");
-      setUser(res.data.data);
+      updateUser(res.data.data);
       setOpenEdit(false);
     } catch (err) {
       setErrors({ general: "Failed to update profile" });
@@ -64,17 +64,16 @@ export default function ProfilePage() {
   const handleAvatarChange = async (file) => {
     const oldUserAvatar = user;
     const previewUrl = URL.createObjectURL(file);
-    setUser((prev) => ({ ...prev, avatar: { ...prev.avatar, url: previewUrl } }));
+    updateUser({ ...(user || {}), avatar: { ...(user?.avatar || {}), url: previewUrl } });
     const formData = new FormData();
     formData.append("avatar", file);
     try {
       const res = await api.patch("/users/avatar", formData);
-      setUser(res.data.data);
-      localStorage.setItem("user", JSON.stringify(res.data.data));
+      updateUser(res.data.data);
       toast.success("Avatar updated successfully!");
     } catch (err) {
       toast.error("Failed to update avatar");
-      setUser(oldUserAvatar);
+      updateUser(oldUserAvatar);
     } finally {
       URL.revokeObjectURL(previewUrl);
     }

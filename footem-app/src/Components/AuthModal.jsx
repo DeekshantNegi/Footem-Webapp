@@ -22,14 +22,14 @@ const AuthModal = ({ mode, onClose, setAuthMode }) => {
       >
         <button
           onClick={onClose}
-          className="absolute -top-12 right-0 text-white hover:text-[#b4e716] transition-all duration-300"
+          className="absolute -top-12 right-0 text-white hover:text-[#b4e716] transition-all duration-300 cursor-pointer"
         >
           <X size={32} />
         </button>
 
         <div className="animate-in fade-in zoom-in duration-300">
           {currentMode === "login" ? (
-            <Login setAuthMode={setAuthMode} />
+            <Login setAuthMode={setAuthMode} onClose={onClose} />
           ) : (
             <Signup setAuthMode={setAuthMode} />
           )}
