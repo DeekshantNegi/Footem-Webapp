@@ -6,8 +6,16 @@ import footballImage from "../assets/signup-football.png";
 import api from "../api/Axios";
 import { validateSignup } from "../Utils/validatedata";
 
-const Signup = ({ setAuthMode }) => {
+const Signup = ({ setAuthMode, onClose }) => {
   const navigate = useNavigate();
+
+  const handleSwitchToLogin = () => {
+    if (setAuthMode) {
+      setAuthMode("login");
+      return;
+    }
+    navigate("/login");
+  };
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -15,6 +23,7 @@ const Signup = ({ setAuthMode }) => {
     fullName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const [error, setError] = useState({});
@@ -47,12 +56,16 @@ const Signup = ({ setAuthMode }) => {
     setLoading(true);
 
     try {
-      
-      await api.post("/users/register", formData);
+      const { fullName, email, password } = formData;
+      await api.post("/users/register", { fullName, email, password });
 
-      console.log("Registering user:", formData);
+      console.log("Registering user:", { fullName, email, password });
 
       toast.success("Registration successful!");
+
+      if (onClose) {
+        onClose();
+      }
 
       navigate("/login");
     } catch (err) {
@@ -162,6 +175,30 @@ const Signup = ({ setAuthMode }) => {
               </button>
             </div>
 
+            {/* Confirm Password */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-2xl border bg-gray-50 dark:bg-[#222222]  dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b4e716] ${
+                  error.confirmPassword
+                    ? "border-red-500"
+                    : "border-gray-200 dark:border-slate-700"
+                }`}
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+
             {/* Submit */}
             <button
               type="submit"
@@ -188,6 +225,12 @@ const Signup = ({ setAuthMode }) => {
               </p>
             )}
 
+            {error.confirmPassword && (
+              <p className="text-red-500 text-sm text-center">
+                {error.confirmPassword}
+              </p>
+            )}
+
             {error.general && (
               <p className="text-red-500 text-sm text-center">
                 {error.general}
@@ -199,7 +242,7 @@ const Signup = ({ setAuthMode }) => {
             Already have an account?{" "}
             <button
               type="button"
-              onClick={() => setAuthMode("login")}
+              onClick={handleSwitchToLogin}
               className="text-[#b4e716] font-semibold hover:underline cursor-pointer"
             >
               Sign In

@@ -12,6 +12,14 @@ const Login = ({ setAuthMode, onClose } ) => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
+  const handleSwitchToSignup = () => {
+    if (setAuthMode) {
+      setAuthMode("signup");
+      return;
+    }
+    navigate("/signup");
+  };
+
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -51,7 +59,9 @@ const Login = ({ setAuthMode, onClose } ) => {
       const res = await api.post("/users/login", formData);
 
       login(res.data);
-      onClose();
+      if (onClose) {
+        onClose();
+      }
 
       toast.success("Login successful!");
 
@@ -199,11 +209,11 @@ const Login = ({ setAuthMode, onClose } ) => {
               Don't have an account?{" "}
               <button
                 type="button"
-                onClick={() => setAuthMode("signup")}
+                onClick={handleSwitchToSignup}
                 className="text-[#b4e716] font-semibold hover:underline cursor-pointer"
-            >
-             Sign Up
-            </button>
+              >
+                Sign Up
+              </button>
             </p>
 
           </div>

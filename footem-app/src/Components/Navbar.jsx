@@ -101,7 +101,7 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
             <div className="relative" ref={menuRef}>
               <div
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-all"
               >
                  {user.avatar?.url ? (
                     <img

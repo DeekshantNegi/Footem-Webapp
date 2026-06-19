@@ -26,8 +26,11 @@ const validateSignup = (data) => {
     const errors = {};
     errors.email = validateEmail(data.email);
     errors.password = validatePassword(data.password);
-    if (data.confirmPassword !== data.password) errors.confirmPassword = 'Passwords do not match';
     errors.fullName = validateName(data.fullName);
+    // If confirmPassword is provided, ensure it matches the password
+    if (data.confirmPassword !== undefined && data.confirmPassword !== data.password) {
+        errors.confirmPassword = 'Passwords do not match';
+    }
     // Remove null errors
     Object.keys(errors).forEach(key => errors[key] === null && delete errors[key]);
     return Object.keys(errors).length === 0 ? null : errors;

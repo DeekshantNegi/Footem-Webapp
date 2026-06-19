@@ -1,11 +1,19 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { OwnerContext } from "../context/OwnerContext.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import Spinner from "../Components/Spinner.jsx";
-import { FileCheck, Phone, MapPin, ShieldCheck, BadgeCheck, LayoutDashboard, ClipboardList } from "lucide-react";
+import {
+  FileCheck,
+  Phone,
+  MapPin,
+  ShieldCheck,
+  BadgeCheck,
+  LayoutDashboard,
+  ClipboardList,
+} from "lucide-react";
 
 const FIELDS = [
   {
@@ -46,42 +54,64 @@ const FIELDS = [
 ];
 
 const NEXT_STEPS = [
-  { icon: ClipboardList,   text: "Your application will be reviewed by our admin team."          },
-  { icon: ShieldCheck,     text: "We'll verify your business documents and details."              },
-  { icon: BadgeCheck,      text: "Once approved, you'll receive a confirmation notification."     },
-  { icon: LayoutDashboard, text: "You'll get full access to the owner dashboard to manage turfs." },
+  {
+    icon: ClipboardList,
+    text: "Your application will be reviewed by our admin team.",
+  },
+  {
+    icon: ShieldCheck,
+    text: "We'll verify your business documents and details.",
+  },
+  {
+    icon: BadgeCheck,
+    text: "Once approved, you'll receive a confirmation notification.",
+  },
+  {
+    icon: LayoutDashboard,
+    text: "You'll get full access to the owner dashboard to manage turfs.",
+  },
 ];
 
 const ApplyForOwner = () => {
-  const navigate  = useNavigate();
-  const { user }  = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const { ownerProfile, applyForOwner, loading } = useContext(OwnerContext);
 
   const [formData, setFormData] = useState({
-    turfName: "", phone: "", location: "",
-    businessLicenseNumber: "", idProof: "",
+    turfName: "",
+    phone: "",
+    location: "",
+    businessLicenseNumber: "",
+    idProof: "",
   });
-  const [errors,        setErrors]        = useState({});
-  const [touched,       setTouched]       = useState({});
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [submitLoading, setSubmitLoading] = useState(false);
+  const skipAlreadyAppliedToast = useRef(false);
 
   useEffect(() => {
-    if (!user) { navigate("/signup"); return; }
+    if (!user) {
+      navigate("/signup");
+      return;
+    }
     if (ownerProfile) {
-      toast.info("You have already applied for owner status");
+      if (!skipAlreadyAppliedToast.current) {
+        toast.info("You have already applied for owner status");
+      }
       navigate("/owner-profile");
     }
   }, [user, ownerProfile, navigate]);
 
   const validateForm = () => {
     const e = {};
-    if (!formData.turfName?.trim())               e.turfName = "Turf name is required";
-    if (!formData.phone?.trim())                  e.phone    = "Phone number is required";
+    if (!formData.turfName?.trim()) e.turfName = "Turf name is required";
+    if (!formData.phone?.trim()) e.phone = "Phone number is required";
     else if (!/^[0-9]{10}$/.test(formData.phone.replace(/\D/g, "")))
-                                                  e.phone    = "Enter a valid 10-digit number";
-    if (!formData.location?.trim())               e.location = "Location is required";
-    if (!formData.businessLicenseNumber?.trim())  e.businessLicenseNumber = "License number is required";
-    if (!formData.idProof?.trim())                e.idProof  = "ID proof is required";
+      e.phone = "Enter a valid 10-digit number";
+    if (!formData.location?.trim()) e.location = "Location is required";
+    if (!formData.businessLicenseNumber?.trim())
+      e.businessLicenseNumber = "License number is required";
+    if (!formData.idProof?.trim()) e.idProof = "ID proof is required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -107,10 +137,14 @@ const ApplyForOwner = () => {
     try {
       setSubmitLoading(true);
       await applyForOwner(formData);
+      // prevent the effect from showing the "already applied" info toast
+      skipAlreadyAppliedToast.current = true;
       toast.success("Application submitted successfully!");
       navigate("/owner-profile");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to submit application");
+      toast.error(
+        err.response?.data?.message || "Failed to submit application",
+      );
     } finally {
       setSubmitLoading(false);
     }
@@ -133,7 +167,6 @@ const ApplyForOwner = () => {
           transition={{ duration: 0.4 }}
           className="space-y-6"
         >
-
           {/* ── Page Header ── */}
           <div className="mb-8">
             <p className="text-[#c8f028] text-xs font-bold uppercase tracking-widest mb-2">
@@ -143,7 +176,8 @@ const ApplyForOwner = () => {
               Become a Turf Owner
             </h1>
             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-              Expand your business and reach more players. Fill in the details below to apply.
+              Expand your business and reach more players. Fill in the details
+              below to apply.
             </p>
             <div className="w-12 h-[3px] bg-[#c8f028] mt-4 rounded-full" />
           </div>
@@ -151,50 +185,52 @@ const ApplyForOwner = () => {
           {/* ── Form Card ── */}
           <div className="bg-[#1a1a1a] border border-white/5 rounded-2xl p-6 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              {FIELDS.map(
+                ({ name, label, type, placeholder, icon: Icon }, i) => (
+                  <motion.div
+                    key={name}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: i * 0.06 }}
+                    className="flex flex-col gap-1.5"
+                  >
+                    <label className="text-gray-400 text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
+                      <Icon size={13} className="text-[#c8f028]" />
+                      {label}
+                    </label>
 
-              {FIELDS.map(({ name, label, type, placeholder, icon: Icon }, i) => (
-                <motion.div
-                  key={name}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.06 }}
-                  className="flex flex-col gap-1.5"
-                >
-                  <label className="text-gray-400 text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
-                    <Icon size={13} className="text-[#c8f028]" />
-                    {label}
-                  </label>
-
-                  <input
-                    type={type}
-                    name={name}
-                    value={formData[name]}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder={placeholder}
-                    className={`bg-[#121212] text-white text-sm w-full px-4 py-3 rounded-xl border 
+                    <input
+                      type={type}
+                      name={name}
+                      value={formData[name]}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder={placeholder}
+                      className={`bg-[#121212] text-white text-sm w-full px-4 py-3 rounded-xl border 
                     focus:outline-none transition-colors duration-200 placeholder:text-gray-600
-                    ${errors[name] && touched[name]
-                      ? "border-red-500/60 focus:border-red-500"
-                      : "border-white/10 focus:border-[#c8f028]/60"
+                    ${
+                      errors[name] && touched[name]
+                        ? "border-red-500/60 focus:border-red-500"
+                        : "border-white/10 focus:border-[#c8f028]/60"
                     }`}
-                  />
+                    />
 
-                  <AnimatePresence>
-                    {errors[name] && touched[name] && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-red-400 text-xs"
-                      >
-                        {errors[name]}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
+                    <AnimatePresence>
+                      {errors[name] && touched[name] && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-red-400 text-xs"
+                        >
+                          {errors[name]}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ),
+              )}
 
               {/* Submit */}
               <motion.button
@@ -207,12 +243,13 @@ const ApplyForOwner = () => {
                 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
               >
                 {submitLoading ? (
-                  <><Spinner size={16} /> Submitting...</>
+                  <>
+                    <Spinner size={16} /> Submitting...
+                  </>
                 ) : (
                   "Submit Application →"
                 )}
               </motion.button>
-
             </form>
           </div>
 
@@ -232,13 +269,22 @@ const ApplyForOwner = () => {
               {NEXT_STEPS.map(({ icon: Icon, text }, i) => (
                 <div key={i} className="flex items-start gap-4">
                   {/* Step number */}
-                  <div className="w-7 h-7 rounded-full bg-[#c8f028]/10 border border-[#c8f028]/20
-                    flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[#c8f028] text-xs font-bold">{i + 1}</span>
+                  <div
+                    className="w-7 h-7 rounded-full bg-[#c8f028]/10 border border-[#c8f028]/20
+                    flex items-center justify-center flex-shrink-0 mt-0.5"
+                  >
+                    <span className="text-[#c8f028] text-xs font-bold">
+                      {i + 1}
+                    </span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Icon size={16} className="text-[#c8f028] flex-shrink-0 mt-0.5" />
-                    <p className="text-gray-400 text-sm leading-relaxed">{text}</p>
+                    <Icon
+                      size={16}
+                      className="text-[#c8f028] flex-shrink-0 mt-0.5"
+                    />
+                    <p className="text-gray-400 text-sm leading-relaxed">
+                      {text}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -254,7 +300,6 @@ const ApplyForOwner = () => {
               ← Go back
             </button>
           </div>
-
         </motion.div>
       </div>
     </div>

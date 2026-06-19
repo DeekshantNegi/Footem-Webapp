@@ -101,7 +101,25 @@ export default function AdminDashboard() {
   };
 
   if (loading || fetching) {
-    return <Spinner />;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-[#1a1a1a] text-white py-10 px-4">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="animate-pulse space-y-6">
+            <div className="h-28 bg-[#1f1f1f] rounded-[2rem] border border-gray-800 p-6" />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="space-y-4">
+                <div className="h-20 bg-[#1f1f1f] rounded-[2rem] border border-gray-800" />
+                <div className="h-20 bg-[#1f1f1f] rounded-[2rem] border border-gray-800" />
+              </div>
+              <div className="space-y-4">
+                <div className="h-20 bg-[#1f1f1f] rounded-[2rem] border border-gray-800" />
+                <div className="h-20 bg-[#1f1f1f] rounded-[2rem] border border-gray-800" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!user || user.role !== "admin") {

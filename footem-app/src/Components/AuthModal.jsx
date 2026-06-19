@@ -31,7 +31,7 @@ const AuthModal = ({ mode, onClose, setAuthMode }) => {
           {currentMode === "login" ? (
             <Login setAuthMode={setAuthMode} onClose={onClose} />
           ) : (
-            <Signup setAuthMode={setAuthMode} />
+            <Signup setAuthMode={setAuthMode} onClose={onClose} />
           )}
         </div>
       </div>
