@@ -31,37 +31,41 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
   next();
 });
 
+// authorizeRoles works as an OR across the roles passed in — e.g.
+// authorizeRoles("owner", "admin") should let *either* a verified owner
+// or an admin through. Each check below only ever sets `authorized = true`;
+// none of them throw on their own, so one failing role never blocks
+// another from being checked.
 export const authorizeRoles = (...roles) => {
-  return async (req, res, next) => {
-    try {
-      if (!req.user) {
-        throw new ApiError(
-          403,
-          "Forbidden: You don't have permission to access this resource",
-        );
-      }
-      let authorization = false;
-      if (roles.includes("owner")) {
-        const owner = await Owner.findOne({ user: req.user._id });
-        if (!owner || owner.status !== "verified") {
-          throw new ApiError(403, "Owner not approved");
-        }
-        req.owner = owner;
-        authorization = true;
-      }
-
-      if (roles.includes("admin") && req.user.role === "admin") {
-        authorization = true;
-      }
-      if (!authorization)
-        throw new ApiError(
-          403,
-          "Forbidden: You don't have permission to access this resource",
-        );
-      next();
-    } catch (error) {
-      next(error);
-      console.error("Authorization error:", error);
+  return asyncHandler(async (req, res, next) => {
+    if (!req.user) {
+      throw new ApiError(
+        403,
+        "Forbidden: You don't have permission to access this resource",
+      );
     }
-  };
+
+    let authorized = false;
+
+    if (roles.includes("owner")) {
+      const owner = await Owner.findOne({ user: req.user._id });
+      if (owner && owner.status === "verified") {
+        req.owner = owner;
+        authorized = true;
+      }
+    }
+
+    if (!authorized && roles.includes("admin") && req.user.role === "admin") {
+      authorized = true;
+    }
+
+    if (!authorized) {
+      throw new ApiError(
+        403,
+        "Forbidden: You don't have permission to access this resource",
+      );
+    }
+
+    next();
+  });
 };

@@ -24,7 +24,7 @@ const registerUser = asyncHandler(async (req, res) => {
   /* Validate input fields */
   const { fullName, email, password } = req.body;
 
-  if ([fullName, email, password].some((field) => field?.trim() === "")) {
+  if ([fullName, email, password].some((field) => !field || field.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -46,7 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User created successfully"));
+    .json(new ApiResponse(201, createdUser, "User created successfully"));
 });
 
 //loginuser

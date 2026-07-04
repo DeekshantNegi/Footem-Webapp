@@ -10,6 +10,33 @@ import { motion, AnimatePresence } from "framer-motion";
 import ProfileImage from "./ProfileImage.jsx";
 import ResetPassword from "./ResetPassword.jsx";
 import Spinner from "../../Components/Spinner.jsx";
+import { Clock, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+
+// Presentation for each stage of an owner application — keyed by the same
+// status values the backend uses (Owner.status: "pending" | "verified" | "rejected").
+const OWNER_STATUS_META = {
+  pending: {
+    label: "Application under review",
+    description: "Our admin team is reviewing your documents — this usually takes 24–48 hours.",
+    Icon: Clock,
+    iconBg: "bg-yellow-500/10",
+    iconColor: "text-yellow-400",
+  },
+  verified: {
+    label: "Approved — you're a turf owner!",
+    description: "Manage your turfs and bookings from the owner dashboard.",
+    Icon: CheckCircle2,
+    iconBg: "bg-[#c8f028]/10",
+    iconColor: "text-[#c8f028]",
+  },
+  rejected: {
+    label: "Application rejected",
+    description: "Update your details and re-submit whenever you're ready.",
+    Icon: XCircle,
+    iconBg: "bg-red-500/10",
+    iconColor: "text-red-400",
+  },
+};
 
 export default function ProfilePage() {
   const [openEdit, setOpenEdit] = useState(false);
@@ -84,6 +111,8 @@ export default function ProfilePage() {
     `bg-[#121212] text-white text-sm w-full px-4 py-3 rounded-xl border 
     focus:outline-none focus:border-[#c8f028]/60 transition-colors placeholder:text-gray-600
     ${errors[field] ? "border-red-500/60" : "border-white/10"}`;
+
+  const ownerStatusMeta = ownerProfile ? OWNER_STATUS_META[ownerProfile.status] : null;
 
   return (
     <div className="min-h-screen bg-[#121212] pt-20 px-6 pb-12">
@@ -239,6 +268,51 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+
+        {/* ── Owner Application Status ── */}
+        {ownerProfile && ownerStatusMeta && (
+          <div className="bg-[#1a1a1a] border border-white/5 rounded-2xl p-6">
+            <h3 className="text-white font-bold text-base mb-5">Owner Application</h3>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${ownerStatusMeta.iconBg}`}>
+                  <ownerStatusMeta.Icon size={18} className={ownerStatusMeta.iconColor} />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">{ownerStatusMeta.label}</p>
+                  <p className="text-gray-500 text-xs mt-1 leading-relaxed">{ownerStatusMeta.description}</p>
+                </div>
+              </div>
+
+              {ownerProfile.status === "verified" && (
+                <button
+                  onClick={() => navigate("/owner-dashboard")}
+                  className="flex-shrink-0 inline-flex items-center justify-center gap-2 bg-[#c8f028] text-black text-sm font-bold px-5 py-2.5 rounded-xl
+                  hover:brightness-110 active:scale-95 transition-all duration-200"
+                >
+                  Owner Dashboard <ArrowRight size={14} />
+                </button>
+              )}
+
+              {ownerProfile.status === "rejected" && (
+                <button
+                  onClick={() => navigate("/apply-owner")}
+                  className="flex-shrink-0 bg-transparent border border-white/15 text-white text-sm font-medium px-5 py-2.5 rounded-xl
+                  hover:border-[#c8f028]/40 hover:text-[#c8f028] active:scale-95 transition-all duration-200"
+                >
+                  Re-apply
+                </button>
+              )}
+            </div>
+
+            {ownerProfile.status === "rejected" && ownerProfile.rejectionReason && (
+              <p className="mt-4 text-xs text-red-400 bg-red-500/5 border border-red-500/20 rounded-xl p-3 leading-relaxed">
+                Reason: {ownerProfile.rejectionReason}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* ── Recent Activity ── */}
         <div className="bg-[#1a1a1a] border border-white/5 rounded-2xl p-6">

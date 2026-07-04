@@ -1,6 +1,6 @@
 import { useState, useContext, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, LogOut } from "lucide-react";
+import { Menu, X, Search, LogOut, User } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import { OwnerContext } from "../context/OwnerContext.jsx";
 
@@ -29,6 +29,11 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
     { name: "My Bookings", path: "/mybookings" },
     { name: "Turfs", path: "/Turfs" },
   ];
+
+  const handleMobileLogout = async () => {
+    await logout();
+    setOpen(false);
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
@@ -160,11 +165,49 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
       >
         <div className="p-6 flex flex-col gap-4 text-white">
 
+          {user && (
+            <div className="flex items-center gap-3 pb-4 mb-2 border-b border-white/10">
+              {user.avatar?.url ? (
+                <img
+                  src={user.avatar.url}
+                  alt="avatar"
+                  className="w-10 h-10 rounded-full border-2 border-white flex-shrink-0"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-white text-black font-semibold border-2 border-white flex items-center justify-center flex-shrink-0">
+                  {user.email.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-semibold truncate">{user.fullName || user.email}</p>
+                <p className="text-xs text-gray-400 truncate">{user.email}</p>
+              </div>
+            </div>
+          )}
+
           {navItems.map((item) => (
             <Link key={item.path} to={item.path} onClick={() => setOpen(false)}>
               {item.name}
             </Link>
           ))}
+
+          {user && (
+            <Link to="/profile" onClick={() => setOpen(false)} className="flex items-center gap-2">
+              <User size={16} className="text-[#b4e716]" /> Profile
+            </Link>
+          )}
+
+          {ownerProfile?.status === "verified" && (
+            <Link to="/owner-dashboard" onClick={() => setOpen(false)}>
+              Dashboard
+            </Link>
+          )}
+
+          {ownerProfile && ownerProfile.status !== "verified" && (
+            <Link to="/owner-profile" onClick={() => setOpen(false)}>
+              Owner status
+            </Link>
+          )}
 
           {user?.role === "admin" && (
             <Link to="/admin-dashboard" onClick={() => setOpen(false)}>
@@ -172,7 +215,7 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
             </Link>
           )}
 
-          {!user && (
+          {!user ? (
             <button
               onClick={() => {
                 setAuthMode("login");
@@ -182,6 +225,13 @@ const Navbar = ({ setShowAuthModal, setAuthMode }) => {
               className="mt-4 bg-[#b4e716] text-black px-4 py-2 rounded-full font-semibold"
             >
               Login / Signup
+            </button>
+          ) : (
+            <button
+              onClick={handleMobileLogout}
+              className="mt-4 flex items-center gap-2 text-red-400 border border-red-500/30 px-4 py-2 rounded-full font-semibold hover:bg-red-500/10 transition"
+            >
+              <LogOut size={16} /> Logout
             </button>
           )}
         </div>

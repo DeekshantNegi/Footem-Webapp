@@ -1,276 +1,476 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { TurfContext } from "../context/TurfContext";
 import { BookingContext } from "../context/BookingContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar } from "react-calendar";
-import { Calendar as CalendarIcon, MapPin, CheckCircle } from "lucide-react";
-import Backimg from "../assets/Heroimg.jpg";
+import {
+  Calendar as CalendarIcon,
+  MapPin,
+  Star,
+  ArrowLeft,
+  Heart,
+  Share2,
+  ShieldCheck,
+  X,
+  Lightbulb,
+  ParkingCircle,
+  Shirt,
+  Droplet,
+  Coffee,
+  Cross,
+  ArrowRight,
+} from "lucide-react";
+
+// Theme tokens — the only two accent colors on the page.
+const INK = "#1A1A1A";
+const LIME = "#b4e716";
+
+// Static amenity list — swap for selectedTurf.amenities when that data exists.
+const AMENITIES = [
+  { icon: Lightbulb, label: "Flood Lights" },
+  { icon: ParkingCircle, label: "Parking" },
+  { icon: Shirt, label: "Changing Room" },
+  { icon: Droplet, label: "Water Facility" },
+  { icon: CalendarIcon, label: "Washroom" },
+  { icon: Coffee, label: "Cafeteria" },
+  { icon: Cross, label: "First Aid" },
+  { icon: ShieldCheck, label: "Equipment Rental" },
+];
+
+function nextSevenDays() {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+}
+
+const dayLabel = (d) => d.toLocaleDateString(undefined, { weekday: "short" });
+const dateLabel = (d) => d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+const isSameDay = (a, b) => a.toDateString() === b.toDateString();
 
 export default function TurfDetails() {
   // Mock availability for a selected date. Each slot has time, duration, status
   const initialSlots = [
-    { id: "s1", time: "06:00AM - 07:00AM", available: true },
-    { id: "s2", time: "07:00AM - 08:00AM", available: false },
-    { id: "s3", time: "08:00AM - 09:00AM", available: true },
-    { id: "s4", time: "09:00AM - 10:00AM", available: true },
-    { id: "s5", time: "10:00AM - 11:00AM", available: false },
-    { id: "s6", time: "05:00PM - 06:00PM", available: true },
-    { id: "s7", time: "07:00PM - 08:00PM", available: true },
+    { id: "s1", time: "6:00 AM", end: "7:00 AM", status: "available" },
+    { id: "s2", time: "7:00 AM", end: "8:00 AM", status: "available" },
+    { id: "s3", time: "8:00 AM", end: "9:00 AM", status: "available" },
+    { id: "s4", time: "9:00 AM", end: "10:00 AM", status: "available" },
+    { id: "s5", time: "10:00 AM", end: "11:00 AM", status: "booked" },
+    { id: "s6", time: "11:00 AM", end: "12:00 PM", status: "available" },
+    { id: "s7", time: "12:00 PM", end: "1:00 PM", status: "available" },
+    { id: "s8", time: "1:00 PM", end: "2:00 PM", status: "booked" },
+    { id: "s9", time: "2:00 PM", end: "3:00 PM", status: "available" },
+    { id: "s10", time: "3:00 PM", end: "4:00 PM", status: "available" },
+    { id: "s11", time: "4:00 PM", end: "5:00 PM", status: "available" },
+    { id: "s12", time: "5:00 PM", end: "6:00 PM", status: "available" },
+    { id: "s13", time: "6:00 PM", end: "7:00 PM", status: "available", popular: true },
+    { id: "s14", time: "7:00 PM", end: "8:00 PM", status: "available" },
+    { id: "s15", time: "8:00 PM", end: "9:00 PM", status: "available" },
+    { id: "s16", time: "9:00 PM", end: "10:00 PM", status: "unavailable" },
+    { id: "s17", time: "10:00 PM", end: "11:00 PM", status: "unavailable" },
+    { id: "s18", time: "11:00 PM", end: "12:00 AM", status: "available" },
   ];
 
   const navigate = useNavigate();
   const { selectedTurf } = useContext(TurfContext);
-  const { confirmBooking, allBookings } = useContext(BookingContext);
+  const { confirmBooking } = useContext(BookingContext);
 
+  const days = useMemo(() => nextSevenDays(), []);
   const [slots, setSlots] = useState(initialSlots);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedSlotId, setselectedSlotId] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(days[0]);
+  const [selectedSlotId, setSelectedSlotId] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+  const galleryRef = useRef(null);
 
   if (!selectedTurf) {
     navigate("/turfs");
     return null;
   }
 
-  const selectSlot = (slot) => {
-    if (!slot.available) return; // blocked
-    setselectedSlotId(slot.id === selectedSlotId ? null : slot.id);
+  const activeSlot = slots.find((s) => s.id === selectedSlotId);
+  // Full gallery as uploaded by the turf owner — falls back to the single cover image if that's all there is.
+  const gallery = selectedTurf.images?.length ? selectedTurf.images : [selectedTurf.image];
+
+  const scrollToImage = (i) => {
+    const node = galleryRef.current;
+    if (!node) return;
+    node.scrollTo({ left: i * node.clientWidth, behavior: "smooth" });
+    setActiveImage(i);
   };
 
-  const bookselectedSlotId = () => {
-    if (!selectedSlotId) return;
+  const onGalleryScroll = (e) => {
+    const node = e.currentTarget;
+    const i = Math.round(node.scrollLeft / node.clientWidth);
+    if (i !== activeImage) setActiveImage(i);
+  };
+
+  const selectSlot = (slot) => {
+    if (slot.status !== "available") return;
+    setSelectedSlotId(slot.id === selectedSlotId ? null : slot.id);
+  };
+
+  const confirmReservation = () => {
+    if (!activeSlot) return;
     setSlots((prev) =>
-      prev.map((s) =>
-        s.id === selectedSlotId ? { ...s, available: false } : s
-      )
+      prev.map((s) => (s.id === selectedSlotId ? { ...s, status: "booked" } : s))
     );
-    const selectedSlot = slots.find((s) => s.id === selectedSlotId);
-
-    confirmBooking({
-      turf: selectedTurf,
-      date: selectedDate,
-      slot: selectedSlot,
-    });
+    confirmBooking({ turf: selectedTurf, date: selectedDate, slot: activeSlot });
     setShowBookingModal(false);
-    setselectedSlotId(null);
-
+    setSelectedSlotId(null);
     // In a real app: call API to reserve slot and handle errors / race conditions
   };
 
+  const statusStyle = {
+    available: { border: "rgba(180,231,22,0.35)", bg: "rgba(180,231,22,0.06)", text: LIME },
+    booked: { border: "rgba(255,255,255,0.06)", bg: "#202020", text: "#5c5c5c" },
+    unavailable: { border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.05)", text: "#7a4444" },
+  };
+
   return (
-    <div
-      className="min-h-screen bg-gradient-to-b from-white to-gray-50 sm:p-6 md:p-12 "
-      style={{
-        backgroundImage: `url(${selectedTurf.image})`,
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="max-w-7xl mx-auto grid grid-cols-1 pt-10 lg:grid-cols-3 gap-8">
-        {/* Left: Images */}
-        <div className="lg:col-span-2 ">
-          <div className="rounded-2xl sm:overflow-hidden shadow-lg ">
-            <div className="relative">
-              <img
-                src={selectedTurf.image}
-                alt={`${selectedTurf.name}`}
-                className="w-full h-72 md:h-96 object-cover"
-              />
+    <div className="min-h-screen pb-28 relative" style={{ backgroundColor: INK }}>
+      {/* Scoped dark theme for react-calendar, since it ships its own CSS */}
+      <style>{`
+        .turf-calendar.react-calendar { width: 100%; background: transparent; border: none; font-family: inherit; color: #F5F5F0; }
+        .turf-calendar .react-calendar__navigation button { color: #F5F5F0; font-weight: 700; }
+        .turf-calendar .react-calendar__navigation button:enabled:hover,
+        .turf-calendar .react-calendar__navigation button:enabled:focus { background: rgba(180,231,22,0.12); border-radius: 8px; }
+        .turf-calendar .react-calendar__month-view__weekdays { color: #8A8A8A; font-size: 0.7rem; text-transform: uppercase; font-weight: 700; }
+        .turf-calendar .react-calendar__month-view__weekdays abbr { text-decoration: none; }
+        .turf-calendar .react-calendar__tile { color: #E5E5E0; border-radius: 8px; padding: 0.6em 0.4em; }
+        .turf-calendar .react-calendar__tile:enabled:hover,
+        .turf-calendar .react-calendar__tile:enabled:focus { background: rgba(180,231,22,0.12); }
+        .turf-calendar .react-calendar__tile--now { background: rgba(180,231,22,0.1); color: #b4e716; }
+        .turf-calendar .react-calendar__tile--active { background: #b4e716 !important; color: #1A1A1A !important; font-weight: 800; }
+        .turf-calendar .react-calendar__month-view__days__day--neighboringMonth { color: #4a4a4a; }
+      `}</style>
 
-              {/* floating info badge */}
-              <div className="absolute left-4 top-4 bg-white/80 backdrop-blur rounded-xl px-4 py-2 flex items-center gap-3">
-                <div className="text-sm">
-                  <div className="text-lg font-semibold">
-                    {selectedTurf.name}
-                  </div>
-                  <div className="text-xs text-gray-600 flex items-center gap-2">
-                    <MapPin size={14} /> {selectedTurf.location}
-                  </div>
-                </div>
-                <div className="ml-auto text-sm font-medium">
-                  ₹{selectedTurf.price}/hr
-                </div>
-              </div>
+      {/* Top bar — floats over the gallery, full width, no side gutters */}
+      <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 sm:px-6 pt-5">
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-full border text-white focus-visible:outline-none focus-visible:ring-2"
+          style={{ borderColor: "rgba(255,255,255,0.2)", backgroundColor: "rgba(26,26,26,0.55)", backdropFilter: "blur(6px)", outlineColor: LIME }}
+          aria-label="Go back"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setLiked((v) => !v)}
+            className="p-2 rounded-full border focus-visible:outline-none focus-visible:ring-2"
+            style={{ borderColor: "rgba(255,255,255,0.2)", backgroundColor: "rgba(26,26,26,0.55)", backdropFilter: "blur(6px)", outlineColor: LIME }}
+            aria-label="Save turf"
+          >
+            <Heart size={18} color={liked ? LIME : "#fff"} fill={liked ? LIME : "none"} />
+          </button>
+          <button
+            onClick={() => navigator.share?.({ title: selectedTurf.name })}
+            className="p-2 rounded-full border text-white focus-visible:outline-none focus-visible:ring-2"
+            style={{ borderColor: "rgba(255,255,255,0.2)", backgroundColor: "rgba(26,26,26,0.55)", backdropFilter: "blur(6px)", outlineColor: LIME }}
+            aria-label="Share turf"
+          >
+            <Share2 size={18} />
+          </button>
+        </div>
+      </div>
 
-              {/* image thumbnails 
-              <div className="absolute left-4 right-4 bottom-4 flex gap-3 overflow-x-auto pb-2">
-                {turf.images.map((src, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedImage(i)}
-                    className={`flex-shrink-0 rounded-lg overflow-hidden border-2 ${
-                      i === selectedImage
-                        ? "border-indigo-500"
-                        : "border-transparent"
-                    } shadow`}
-                    aria-label={`Show image ${i + 1}`}
-                  >
-                    <img
-                      src={src}
-                      alt={`thumb-${i}`}
-                      className="w-24 h-14 object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-              */}
-            </div>
+      {/* Full-bleed image gallery — every photo the turf owner uploaded, swipe/scroll through them */}
+      <div className="relative">
+        <div
+          ref={galleryRef}
+          onScroll={onGalleryScroll}
+          className="flex overflow-x-auto snap-x snap-mandatory"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {gallery.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt={`${selectedTurf.name} photo ${i + 1}`}
+              className="w-full flex-shrink-0 snap-center h-72 sm:h-[26rem] object-cover"
+            />
+          ))}
+        </div>
 
-            {/* description & features */}
-            <div className="p-6 -mt-3 sm:mt-0 bg-white/80 backdrop-blur-md rounded-t-2xl sm:rounded-none">
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <h2 className="text-2xl font-bold mb-2">About this turf</h2>
-                <p className="text-gray-700 mb-4">
-                  Premium hybrid turf with professional floodlights and
-                  well-maintained grass. Suitable for 5-a-side and 7-a-side
-                  matches. Popular for evening matches and training sessions.
-                </p>
+        <div
+          className="absolute left-3 bottom-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-semibold text-white"
+          style={{ borderColor: "rgba(255,255,255,0.2)", backgroundColor: "rgba(26,26,26,0.6)", backdropFilter: "blur(6px)" }}
+        >
+          <Star size={14} style={{ color: LIME }} fill={LIME} />
+          {selectedTurf.rating}
+          {selectedTurf.reviews ? (
+            <span className="text-gray-300 font-normal">({selectedTurf.reviews} reviews)</span>
+          ) : null}
+        </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <div className="flex items-center gap-3 p-3 border rounded-lg">
-                    <CheckCircle size={22} />
-                    <div>
-                      <div className="text-sm font-medium">Rating</div>
-                      <div className="text-xs text-gray-600">
-                        {selectedTurf.rating} / 5
-                      </div>
-                    </div>
-                  </div>
+        {gallery.length > 1 && (
+          <div
+            className="absolute right-3 bottom-3 px-2.5 py-1 rounded-full text-xs font-semibold text-white"
+            style={{ backgroundColor: "rgba(26,26,26,0.6)", backdropFilter: "blur(6px)" }}
+          >
+            {activeImage + 1} / {gallery.length}
+          </div>
+        )}
+      </div>
 
-                  <div className="flex items-center gap-3 p-3 border rounded-lg">
-                    <CalendarIcon size={22} />
-                    <div>
-                      <div className="text-sm font-medium">Calendar</div>
-                      <div className="text-xs text-gray-600">Choose a date</div>
-                    </div>
-                  </div>
+      {/* Thumbnail strip — tap to jump the gallery to that photo */}
+      {gallery.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 py-3">
+          {gallery.map((src, i) => (
+            <button
+              key={i}
+              onClick={() => scrollToImage(i)}
+              className="flex-shrink-0 rounded-lg overflow-hidden border-2 focus-visible:outline-none"
+              style={{ borderColor: activeImage === i ? LIME : "transparent" }}
+              aria-label={`Show photo ${i + 1}`}
+            >
+              <img src={src} alt="" className="w-20 h-14 object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
 
-                  <div className="flex items-center gap-3 p-3 border rounded-lg">
-                    <div className="text-2xl">⚡</div>
-                    <div>
-                      <div className="text-sm font-medium">Floodlights</div>
-                      <div className="text-xs text-gray-600">
-                        Perfect for nights
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        {/* Title block */}
+        <div className="mt-2">
+          <div
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full mb-2"
+            style={{ backgroundColor: "rgba(180,231,22,0.1)", color: LIME }}
+          >
+            <ShieldCheck size={13} />
+            Verified turf
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+            {selectedTurf.name}
+          </h1>
+          <div className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-400">
+            <MapPin size={14} style={{ color: LIME }} />
+            {selectedTurf.location}
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-3">
+            <span
+              className="text-xs font-medium px-3 py-1.5 rounded-full border text-gray-300"
+              style={{ borderColor: "rgba(255,255,255,0.12)" }}
+            >
+              Football
+            </span>
+            <span
+              className="text-xs font-medium px-3 py-1.5 rounded-full border text-gray-300"
+              style={{ borderColor: "rgba(255,255,255,0.12)" }}
+            >
+              5v5, 7v7
+            </span>
           </div>
         </div>
 
-        {/* Right: Booking panel */}
-        <aside className="bg-white rounded-t-2xl sm:rounded-2xl  p-6 shadow sticky top-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h4 className="text-xl font-bold">Book a slot</h4>
-              <div className="text-sm text-gray-600">
-                Selected date:{" "}
-                <span className="font-medium">
-                  {selectedDate.toDateString()}
-                </span>
+        {/* About */}
+        <div className="mt-6">
+          <h2 className="text-base font-bold text-white mb-2">About turf</h2>
+          <p className="text-sm text-gray-400 leading-relaxed">
+            Premium hybrid turf with professional floodlights and
+            well-maintained grass. Suitable for 5-a-side and 7-a-side
+            matches. Popular for evening matches and training sessions.
+          </p>
+        </div>
+
+        {/* Amenities */}
+        <div
+          className="mt-6 rounded-2xl p-5 border"
+          style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: "#1f1f1f" }}
+        >
+          <h3 className="font-bold text-white mb-4">Amenities</h3>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            {AMENITIES.map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center justify-center text-center gap-2 p-3 rounded-xl border"
+                style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: INK }}
+              >
+                <Icon size={20} style={{ color: LIME }} />
+                <span className="text-xs text-gray-300 leading-tight">{label}</span>
               </div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-gray-600">
-                ₹{selectedTurf.price}/hr
-              </div>
-            </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Date & time */}
+        <div
+          className="mt-6 rounded-2xl p-5 border"
+          style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: "#1f1f1f" }}
+        >
+          <h3 className="font-bold text-white mb-4">Select date &amp; time</h3>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-4">
+            {days.map((d) => {
+              const active = isSameDay(d, selectedDate);
+              return (
+                <button
+                  key={d.toISOString()}
+                  onClick={() => setSelectedDate(d)}
+                  className="flex-shrink-0 flex flex-col items-center justify-center px-4 py-2.5 rounded-xl border text-sm font-semibold focus-visible:outline-none focus-visible:ring-2"
+                  style={{
+                    borderColor: active ? LIME : "rgba(255,255,255,0.12)",
+                    color: active ? LIME : "#E5E5E0",
+                    backgroundColor: active ? "rgba(180,231,22,0.08)" : "transparent",
+                    outlineColor: LIME,
+                  }}
+                >
+                  <span>{isSameDay(d, days[0]) ? "Today" : dayLabel(d)}</span>
+                  <span className="text-xs font-normal text-gray-500">{dateLabel(d)}</span>
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setShowCalendar(true)}
+              className="flex-shrink-0 p-3 rounded-xl border focus-visible:outline-none focus-visible:ring-2"
+              style={{ borderColor: "rgba(255,255,255,0.12)", outlineColor: LIME }}
+              aria-label="Open calendar"
+            >
+              <CalendarIcon size={18} style={{ color: LIME }} />
+            </button>
           </div>
 
-          <div className="mb-4">
-            {/* lightweight calendar - swap as needed */}
-            <div className="border rounded-lg p-2">
-              <Calendar
-                value={selectedDate}
-                onChange={(d) => setSelectedDate(d)}
-              />
-            </div>
+          <div className="flex items-center gap-4 mb-4 text-xs text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: LIME }} />
+              Available
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#4a4a4a" }} />
+              Booked
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#7a3b3b" }} />
+              Unavailable
+            </span>
           </div>
 
-          <div>
-            <h5 className="font-medium mb-2">Available slots</h5>
-            <div className="grid grid-cols-2 gap-3">
-              {slots.map((slot) => (
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+            {slots.map((slot) => {
+              const isSelected = selectedSlotId === slot.id;
+              const style = statusStyle[slot.status];
+              return (
                 <motion.button
                   key={slot.id}
                   onClick={() => selectSlot(slot)}
-                  whileTap={{ scale: slot.available ? 0.97 : 1 }}
-                  className={`text-sm p-3 rounded-lg border flex items-center justify-between gap-2 ${
-                    slot.available
-                      ? "cursor-pointer hover:shadow-lg"
-                      : "opacity-60 cursor-not-allowed"
-                  } ${
-                    selectedSlotId === slot.id
-                      ? "ring-2 ring-indigo-400 bg-indigo-50"
-                      : "bg-white"
-                  }`}
+                  whileTap={{ scale: slot.status === "available" ? 0.96 : 1 }}
+                  disabled={slot.status !== "available"}
+                  className="relative text-xs font-semibold p-2.5 rounded-xl border leading-snug focus-visible:outline-none focus-visible:ring-2"
+                  style={{
+                    borderColor: isSelected ? LIME : style.border,
+                    backgroundColor: isSelected ? LIME : style.bg,
+                    color: isSelected ? INK : style.text,
+                    cursor: slot.status === "available" ? "pointer" : "not-allowed",
+                    outlineColor: LIME,
+                  }}
                 >
-                  <div className="text-left">
-                    <div
-                      className={`font-medium ${
-                        slot.available ? "" : "text-gray-500"
-                      }`}
+                  {slot.popular && !isSelected && (
+                    <span
+                      className="absolute -top-2 right-1 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full"
+                      style={{ backgroundColor: LIME, color: INK }}
                     >
-                      {slot.time}
-                    </div>
-                    <div className="text-xs text-gray-500">1 hour</div>
-                  </div>
-
-                  <div>
-                    {slot.available ? (
-                      <div className="text-xs text-green-600 font-semibold">
-                        Available
-                      </div>
-                    ) : (
-                      <div className="text-xs text-red-500 font-semibold">
-                        Booked
-                      </div>
-                    )}
-                  </div>
+                      Popular
+                    </span>
+                  )}
+                  <div>{slot.time}</div>
+                  <div className="opacity-70 font-normal">– {slot.end}</div>
                 </motion.button>
-              ))}
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Fixed booking bar — always visible on every screen size, never requires scrolling */}
+      <div
+        className="fixed bottom-0 inset-x-0 z-40 border-t"
+        style={{
+          borderColor: "rgba(255,255,255,0.1)",
+          backgroundColor: "rgba(26,26,26,0.97)",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="text-xl font-black text-white leading-none">
+              ₹{selectedTurf.price}
+              <span className="text-sm text-gray-400 font-medium">/hour</span>
+            </div>
+            <div className="text-[11px] text-gray-500 mt-1">
+              {activeSlot ? `${activeSlot.time} – ${activeSlot.end} · Incl. of all taxes` : "Incl. of all taxes"}
             </div>
           </div>
-
-          <div className="mt-6">
-            <button
-              onClick={() => setShowBookingModal(true)}
-              disabled={!selectedSlotId}
-              className={`w-full py-3 rounded-lg active:scale-95 transition-all duration-300 ${
-                selectedSlotId ? "cursor-pointer" : ""
-              } font-semibold ${
-                selectedSlotId
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-gray-200 text-gray-600 cursor-not-allowed"
-              }`}
-            >
-              Reserve slot
-            </button>
-
-            <button
-              onClick={() =>
-                alert("Open directions in maps - replace with actual link")
-              }
-              className="mt-3 w-full py-2 rounded-lg border active:scale-95 transition-all duration-300 cursor-pointer"
-            >
-              Get Directions
-            </button>
-          </div>
-
-          <div className="mt-4 text-xs text-gray-500">
-            <strong>Note:</strong> Slots are held for 10 minutes when reserved.
-            Payments powered by your chosen gateway.
-          </div>
-        </aside>
+          <button
+            onClick={() => alert("Open directions in maps - replace with actual link")}
+            className="shrink-0 p-3.5 rounded-xl border text-white focus-visible:outline-none focus-visible:ring-2"
+            style={{ borderColor: "rgba(255,255,255,0.15)", outlineColor: LIME }}
+            aria-label="Get directions"
+          >
+            <MapPin size={18} style={{ color: LIME }} />
+          </button>
+          <button
+            onClick={() => setShowBookingModal(true)}
+            disabled={!selectedSlotId}
+            className="shrink-0 px-5 sm:px-7 py-3.5 rounded-xl font-bold flex items-center gap-2 active:scale-95 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2"
+            style={{
+              backgroundColor: selectedSlotId ? LIME : "#333333",
+              color: selectedSlotId ? INK : "#8A8A8A",
+              cursor: selectedSlotId ? "pointer" : "not-allowed",
+              outlineColor: LIME,
+            }}
+          >
+            Continue to book
+            <ArrowRight size={16} />
+          </button>
+        </div>
       </div>
+
+      {/* Calendar popover */}
+      <AnimatePresence>
+        {showCalendar && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          >
+            <div
+              className="absolute inset-0"
+              style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+              onClick={() => setShowCalendar(false)}
+            />
+            <motion.div
+              initial={{ scale: 0.97, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.97, y: 20, opacity: 0 }}
+              className="relative rounded-t-2xl sm:rounded-2xl p-5 w-full max-w-sm border"
+              style={{ backgroundColor: "#1f1f1f", borderColor: "rgba(255,255,255,0.1)" }}
+            >
+              <button
+                onClick={() => setShowCalendar(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                aria-label="Close calendar"
+              >
+                <X size={18} />
+              </button>
+              <Calendar
+                className="turf-calendar"
+                value={selectedDate}
+                onChange={(d) => {
+                  setSelectedDate(d);
+                  setShowCalendar(false);
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Booking modal */}
       <AnimatePresence>
@@ -279,45 +479,70 @@ export default function TurfDetails() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
           >
             <div
-              className="absolute inset-0 bg-black/40"
+              className="absolute inset-0"
+              style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
               onClick={() => setShowBookingModal(false)}
-            ></div>
-
+            />
             <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 10 }}
+              initial={{ scale: 0.97, y: 30, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.97, y: 20, opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="relative bg-white rounded-2xl p-6 w-full max-w-md shadow-lg"
+              className="relative rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-md border"
+              style={{ backgroundColor: "#1f1f1f", borderColor: "rgba(255,255,255,0.1)" }}
             >
-              <h3 className="text-lg font-bold mb-2 active:scale-95 transition-all duration-300">
+              <button
+                onClick={() => setShowBookingModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
+
+              <div
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4"
+                style={{ backgroundColor: "rgba(180,231,22,0.12)", color: LIME }}
+              >
                 Confirm reservation
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
+              </div>
+
+              <p className="text-gray-300 mb-1">
                 You're booking{" "}
-                <span className="font-medium">
-                  {slots.find((s) => s.id === selectedSlotId)?.time}
-                </span>{" "}
-                on{" "}
-                <span className="font-medium">
-                  {selectedDate.toDateString()}
+                <span className="font-semibold text-white">
+                  {activeSlot?.time} – {activeSlot?.end}
                 </span>
-                .
               </p>
+              <p className="text-gray-300 mb-5">
+                on{" "}
+                <span className="font-semibold text-white">{selectedDate.toDateString()}</span>{" "}
+                at <span className="font-semibold text-white">{selectedTurf.name}</span>
+              </p>
+
+              <div
+                className="flex items-center justify-between rounded-xl p-3 mb-5 border"
+                style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: INK }}
+              >
+                <span className="text-sm text-gray-400">Total</span>
+                <span className="text-lg font-black" style={{ color: LIME }}>
+                  ₹{selectedTurf.price}
+                </span>
+              </div>
 
               <div className="flex gap-3">
                 <button
-                  onClick={bookselectedSlotId}
-                  className="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-semibold active:scale-95 transition-all duration-300 cursor-pointer"
+                  onClick={confirmReservation}
+                  className="flex-1 py-3 rounded-xl font-bold active:scale-95 transition-all duration-300 cursor-pointer"
+                  style={{ backgroundColor: LIME, color: INK }}
                 >
-                  Pay & confirm
+                  Pay &amp; confirm
                 </button>
                 <button
                   onClick={() => setShowBookingModal(false)}
-                  className="flex-1 py-2 rounded-lg border active:scale-95 transition-all duration-300 cursor-pointer"
+                  className="flex-1 py-3 rounded-xl border text-white active:scale-95 transition-all duration-300 cursor-pointer"
+                  style={{ borderColor: "rgba(255,255,255,0.15)" }}
                 >
                   Cancel
                 </button>
