@@ -22,12 +22,17 @@ jobs:
           REMOTE_PATH: ${{ secrets.REMOTE_PATH || '/home/ubuntu/Footem-Webapp' }}
         run: |
           mkdir -p ~/.ssh
-          install -m 600 /dev/null ~/.ssh/id_rsa
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/id_rsa ~/.ssh/known_hosts
+          chmod 700 ~/.ssh
 
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "$SSH_USERNAME@$SSH_HOST" '
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+          ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/id_rsa "$SSH_USERNAME@$SSH_HOST" '
             set -e
             REPO_URL="https://github.com/DeekshantNegi/Footem-Webapp.git"
             DEPLOY_PATH="$REMOTE_PATH"
