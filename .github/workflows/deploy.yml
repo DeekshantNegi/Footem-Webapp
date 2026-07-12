@@ -3,7 +3,7 @@ name: Deploy to Remote Server
 on:
   push:
     branches:
-      - 'main'
+      - main
   workflow_dispatch:
 
 jobs:
@@ -13,8 +13,31 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: ssh into machine
+
+      - name: Deploy to remote server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST || '13.62.48.166' }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME || 'ubuntu' }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH || '/home/ubuntu/Footem-Webapp' }}
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@13.62.48.166 " git clone https://github.com/DeekshantNegi/Footem-Webapp.git"  
+          mkdir -p ~/.ssh
+          install -m 600 /dev/null ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_rsa ~/.ssh/known_hosts
+
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "$SSH_USERNAME@$SSH_HOST" '
+            set -e
+            REPO_URL="https://github.com/DeekshantNegi/Footem-Webapp.git"
+            DEPLOY_PATH="$REMOTE_PATH"
+
+            if [ -d "$DEPLOY_PATH/.git" ]; then
+              cd "$DEPLOY_PATH"
+              git fetch origin
+              git checkout main
+              git pull origin main
+            else
+              git clone "$REPO_URL" "$DEPLOY_PATH"
+            fi
+          '
